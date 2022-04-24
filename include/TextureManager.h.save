@@ -1,0 +1,48 @@
+#ifndef TEXTUREMANAGER_H
+#define TEXTUREMANAGER_H
+
+#include <GL/glew.h>
+#include <ft2build.h>
+#include<iostream>
+#include <wchar.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
+#include <map>
+#include <string>
+#include "Shader.h"
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_STATIC
+#include "stb_image.h"
+
+using namespace std;
+
+class TextureManager
+{
+public:
+    TextureManager();
+    virtual ~TextureManager();
+
+    GLuint getSprite(string name);
+    GLuint getTextImage(string name);
+    GLuint getSlide(string name);
+    Shader* getShader(string name);
+    
+    //!йняршкэ!
+
+    void LoadTexture(string name, string path, int mode);
+    void LoadShader(string name, string path);
+    void LoadShader(string name, string p1, string p2);
+    void LoadFont(string name, string font);
+    void LoadText(string name, wstring text, string font, int fontSize, glm::vec3 color, int align=1, int vert=1, int space=4);
+
+private:
+    FT_Library  library;
+
+    map<string, GLuint> slideT;
+    map<string, GLuint> spriteT;
+    map<string, Shader*> shaders;
+    map<string, FT_Face> fonts;
+    map<string, GLuint> texts;
+};
+
+#endif // TEXTUREMANAGER_H

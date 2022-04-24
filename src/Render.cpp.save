@@ -1,0 +1,165 @@
+#include "Render.h"
+
+Render::Render(int width, int height, TextureManager* tx) {
+    this->projMat = glm::ortho( 0.f, width + 0.f, height + 0.f, 0.f, 0.1f, 100.0f);
+    //this->projMat = glm::perspective(glm::radians(45.0f), width / height + 0.0f, 0.1f, 100.0f);
+    this->texman = tx;
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+
+    float vertices[] = {
+        // positions    // texture coords
+         0.5f,  0.5f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f,   0.0f, 1.0f  // top left
+    };
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+    unsigned int VBO, EBO;
+    glGenVertexArrays(1, &this->boxVAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(this->boxVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    float vertices1[] = {
+        // positions    // texture coords
+         1.f,  1.0f,  1.0f, 0.0f, // top right
+         1.f, -1.f,   1.0f, 1.0f, // bottom right
+        -1.f, -1.f,   0.0f, 1.0f, // bottom left
+        -1.f,  1.f,   0.0f, 0.0f  // top left
+    };
+    unsigned int indices1[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+    VBO, EBO;
+    glGenVertexArrays(1, &this->guiVAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(this->guiVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices1), indices1, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+}
+
+Render::~Render() {
+    //dtor
+}
+
+void Render::RenderSprite(Sprite* s) {
+    Shader* ts = this->texman->getShader(s->getShader());
+
+    ts->use();
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(s->x, s->y, s->z));
+    model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
+    model = glm::scale(model, glm::vec3(s->sx, s->sy, 1));
+
+    ts->setMat4("model", model);
+    ts->setMat4("view", this->camActive.GetViewMatrix());
+    ts->setMat4("projection", this->projMat);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, this->texman->getSprite(s->getTexure()));
+
+    glBindVertexArray(this->boxVAO);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Render::RenderUI() {
+    Shader* ts = this->texman->getShader("UI");
+
+    ts->use();
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-1.0f + 0.5f, 1.0f-1.0f, 0.f));
+    //model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
+    model = glm::scale(model, glm::vec3(0.5f, 1.0f, 1));
+
+    glm::vec4 clr = glm::vec4(1.0f, 0, 0, 1.0f);
+
+    ts->setMat4("model", model);
+    ts->setVec4("colorL", clr);
+    //ts->setMat4("view", this->camActive.GetViewMatrix());
+    //ts->setMat4("projection", this->projMat);
+
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, this->texman->getSprite(s->getTexure()));
+
+    glBindVertexArray(this->guiVAO);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+Shader* Render::getShaderUI(string shade="UI") {
+    Shader* ts = this->texman->getShader(shade);
+
+    ts->use();
+
+    return ts;
+}
+
+TextureManager* Render::getTextureManager() {
+    return this->texman;
+}
+
+void Render::RenderUI(glm::mat4 model, string shade="UI") {
+    Shader* ts = this->texman->getShader(shade);
+
+    //ts->use();
+
+    //glm::vec4 clr = glm::vec4(1.0f, 0, 0, 1.0f);
+
+    ts->setMat4("model", model);
+    //ts->setVec4("colorL", clr);
+    ts->setMat4("view", this->camActive.GetViewMatrix());
+    ts->setMat4("projection", this->projMat);
+
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, this->texman->getSprite(s->getTexure()));
+
+    glBindVertexArray(this->guiVAO);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Render::setCam(Camera cam) {
+    this->camActive = cam;
+}
+
+void Render::resizeW(int w, int h) {
+    this->projMat = glm::ortho( 0.f, w + 0.f, h + 0.f, 0.f, 0.1f, 100.0f);
+}
+
+Camera* Render::getCam() {
+    return &this->camActive;
+}

@@ -1,0 +1,34 @@
+#ifndef RENDER_H
+#define RENDER_H
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "TextureManager.h"
+#include "Sprite.h"
+#include "Camera.h"
+
+class Render
+{
+public:
+    Render(int width, int height, TextureManager* tm);
+    virtual ~Render();
+
+    void RenderSprite(Sprite* sp);
+    void RenderUI();
+    void RenderUI(glm::mat4 model);
+    Shader* getShaderUI();
+    
+    void setCam(Camera cam);
+    Camera* getCam();
+    void resizeW(int w, int h);
+private:
+    void RenderSlide();
+    glm::mat4 projMat;
+    TextureManager* texman;
+    Camera camActive;
+    unsigned int boxVAO;
+    unsigned int guiVAO;
+};
+
+#endif // RENDER_H
