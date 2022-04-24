@@ -3,7 +3,7 @@
 
 #include <GL/glew.h>
 #include<iostream>
-#include <wchar.h>
+#include <cwchar>
 #include <map>
 #include <string>
 #include <glm/glm.hpp>
@@ -17,10 +17,10 @@
 using namespace std;
 
 struct Character {
-    GLuint     TextureID; // ID текстуры глифа
-    glm::ivec2 Size;      // Размеры глифа
-    glm::ivec2 Bearing;   // Смещение верхней левой точки глифа
-    GLuint     Advance;   // Горизонтальное смещение до начала следующего глифа
+    GLuint     TextureID;
+    glm::ivec2 Size;
+    glm::ivec2 Bearing;
+    GLuint     Advance;
 };
 
 class TextureManager

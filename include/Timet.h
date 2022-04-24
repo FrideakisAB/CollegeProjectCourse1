@@ -16,7 +16,7 @@ public:
 private:
     double currentTime = 0, lastTime = 0, accum = 0;
     double dt =1, dt1 = 0, dt2 = 0;
-    double fps = 1 / 45;
+    double fps = 1.0 / 45;
     bool upt = false;
 };
 

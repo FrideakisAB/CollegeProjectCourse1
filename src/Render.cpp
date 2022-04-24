@@ -81,7 +81,7 @@ void Render::RenderSprite(Sprite* s)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void Render::RenderTextSprite(TextSprite* s, bool hd = false)
+void Render::RenderTextSprite(TextSprite* s, bool hd)
 {
     Shader* ts = this->texman->getShader("Text");
     float scale = 0.7f;
@@ -98,7 +98,6 @@ void Render::RenderTextSprite(TextSprite* s, bool hd = false)
     ts->setMat4("projection", this->projMat);
 
     ts->setVec3("textColor", s->color);
-    glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(this->tVAO);
 
     std::string text = s->getText();
@@ -130,6 +129,7 @@ void Render::RenderTextSprite(TextSprite* s, bool hd = false)
             { xpos + w, ypos + h, 1.0, 0.0 }
         };
         // Render glyph texture over quad
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, ch.TextureID);
         // Update content of VBO memory
         glBindBuffer(GL_ARRAY_BUFFER, tVBO);

@@ -1,6 +1,6 @@
 #include "TextSprite.h"
 
-TextSprite::TextSprite(std::string name, std::string tg = "")
+TextSprite::TextSprite(std::string name, std::string tg)
 {
 
 }

@@ -11,7 +11,7 @@ TextureManager::TextureManager()
 	LoadTexture("ArrowYEnd", "resources/textures/arrowYEnd.png", 4);
 	LoadShader("Standart", "Standart");
 	LoadShader("Text", "Text");
-	LoadFont("resources/Arial_AMU.ttf");
+    LoadFont("resources/Arial_AMU.ttf");
 }
 
 TextureManager::~TextureManager()
@@ -102,7 +102,7 @@ void TextureManager::LoadFont(string path)
             texture,
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            face->glyph->advance.x
+            static_cast<GLuint>(face->glyph->advance.x)
         };
         this->Characters.insert(std::pair<GLchar, Character>(c, character));
         // Characters[c] = character;
