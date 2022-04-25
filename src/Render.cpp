@@ -1,6 +1,6 @@
 #include "Render.h"
 
-Render::Render(int width, int height, TextureManager* tx)
+Render::Render(int width, int height, ResourceManager* tx)
 {
     this->projMat = glm::ortho( 0.f, width * this->Zoom + 0.f, 0.f, height * this->Zoom + 0.f, 0.1f, 100.0f);
     this->texman = tx;
@@ -61,20 +61,20 @@ Render::~Render()
 
 void Render::RenderSprite(Sprite* s)
 {
-    Shader* ts = this->texman->getShader(s->getShader());
+    Shader* ts = this->texman->GetShader(s->getShader());
 
-    ts->use();
+    ts->Use();
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(s->x, s->y, s->z));
     model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
     model = glm::scale(model, glm::vec3(s->sx, s->sy, 1));
 
-    ts->setMat4("model", model);
-    ts->setMat4("view", this->camActive.GetViewMatrix());
-    ts->setMat4("projection", this->projMat);
+    ts->SetMat4("model", model);
+    ts->SetMat4("view", this->camActive.GetViewMatrix());
+    ts->SetMat4("projection", this->projMat);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, this->texman->getSprite(s->getTexure()));
+    glBindTexture(GL_TEXTURE_2D, this->texman->GetSprite(s->getTexure()));
 
     glBindVertexArray(this->boxVAO);
 
@@ -83,21 +83,21 @@ void Render::RenderSprite(Sprite* s)
 
 void Render::RenderTextSprite(TextSprite* s, bool hd)
 {
-    Shader* ts = this->texman->getShader("Text");
+    Shader* ts = this->texman->GetShader("Text");
     float scale = 0.7f;
 
-    ts->use();
+    ts->Use();
 
     glm::mat4 model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(s->x - 114, s->y - 104, s->z));
     //model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
     //model = glm::scale(model, glm::vec3(s->sx, s->sy, 1));
 
-    ts->setMat4("model", model);
-    ts->setMat4("view", this->camActive.GetViewMatrix());
-    ts->setMat4("projection", this->projMat);
+    ts->SetMat4("model", model);
+    ts->SetMat4("view", this->camActive.GetViewMatrix());
+    ts->SetMat4("projection", this->projMat);
 
-    ts->setVec3("textColor", s->color);
+    ts->SetVec3("textColor", s->color);
     glBindVertexArray(this->tVAO);
 
     std::string text = s->getText();

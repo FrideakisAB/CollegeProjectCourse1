@@ -1,25 +1,22 @@
 #include <windows.h>
-#define GLM_FORCE_SSE3
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "Timet.h"
-#include "TextureManager.h"
+#include "Timer.h"
+#include "ResourceManager.h"
 #include "Render.h"
 #include "Sprite.h"
 #include "TextSprite.h"
 #include <cmath>
 #include <string>
-#include <cstdio>
 #include <imgui.h>
+#include <filesystem>
 #include "ImGui/imgui_impl_glfw.h"
 #include "ImGui/imgui_impl_opengl3.h"
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
 #define PI 3.14159265
 
-static float value = 1.0f;
 static bool physAct = false;
 static float Vo = 18;
 static float angle = 30;
@@ -38,37 +35,21 @@ static float x, y;
 static int spCam = 80;
 static std::vector<float> points;
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    	glfwSetWindowShouldClose(window, GL_TRUE);
-    if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    	physAct = !physAct;
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    zoom = zoom - yoffset * sensS;
-}
-
-static char vel[32];
-static int velLen;
-static char angleS[32];
-static int angleSLen;
-float ratio_one[] = {0.2f, 0.8f};
-float ratio_two[] = {0.3f, 0.5f, 0.2f};
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWinMode)
 {
     if(!glfwInit())
         return -1;
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     GLFWwindow* window = glfwCreateWindow(1280, 720, "GLEngine", nullptr, nullptr);
-    if(window == nullptr)
+    if (window == nullptr)
     {
         glfwTerminate();
         return -2;
@@ -90,9 +71,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
-        std::cout << "ERROR::GLEW: Could not init GLEW" << std::endl;
         glfwTerminate();
-        return -2;
+        return -3;
     }
 
     IMGUI_CHECKVERSION();
@@ -104,8 +84,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
-    Time* time = new Time();
-    TextureManager* tm = new TextureManager();
+    Timer timer;
+    ResourceManager* tm = new ResourceManager();
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -151,13 +131,10 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     txtY.setText("17893s");
     ///Game objects end
 
-    int i = 0;
-    float gt = 0;
-
     float velF = Vo, angleF = angle;
     while(!glfwWindowShouldClose(window))
     {
-        time->startFrame();
+        timer.Tick();
         glfwPollEvents();
 
         if(physAct && t != tp)
@@ -167,28 +144,29 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         else
             glfwSetWindowTitle(window, "Cимуляция окончена");
 
-        if(velF != Vo || angleF != angle)
+        if (velF != Vo || angleF != angle)
         {
-            if(velF >= 0)
+            if (velF >= 0)
                 Vo = velF;
             else
             {
                 Vo = 0;
-                snprintf(vel, sizeof vel, "%.0f", Vo);
+                velF = 0;
             }
 
-            if(angleF <= 90.0f && angleF >= 0)
+            if (angleF <= 90.0f && angleF >= 0)
                 angle = angleF;
-            else if(angleF > 90.0f)
+            else if (angleF > 90.0f)
             {
                 angle = 90.0f;
-                snprintf(angleS, sizeof angleS, "%.0f", angle);
+                angleF = 90.0f;
             }
             else
             {
                 angle = 0.0f;
-                snprintf(angleS, sizeof angleS, "%.0f", angle);
+                angleF = 0.0f;
             }
+
             sa = sin(angle * PI / 180);
             ca = cos(angle * PI / 180);
             tp = (Vo / 4.9f) * sa;
@@ -197,11 +175,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
             t = tr;
             points.erase(points.begin(), points.end());
-        }
-
-        if(i<15)
-        {
-            i++;
         }
 
         glfwGetFramebufferSize(window, &width, &height);
@@ -222,8 +195,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         {
             sp2.x = points[i]; sp2.y = points[i + 1];
             curr.RenderSprite(&sp2);
-            if(value < 0.7f)
-                i+= 2;
         }
         curr.RenderSprite(&sp1);
         curr.RenderSprite(&arrB);
@@ -237,14 +208,12 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         curr.RenderTextSprite(&txtY, true);
 
         //Physic block
-        if(i > 10)
-            gt += time->getDeltaTime();
-
-        if(t != tp)
+        if (t != tp)
         {
-            if(t < tp) {
-                if(physAct)
-                    t += gt * value;
+            if (t < tp)
+            {
+                if (physAct)
+                    t += timer.GetDeltaTime();
             }
             else
             {
@@ -275,8 +244,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             points.push_back(sp1.x);
             points.push_back(sp1.y);
         }
-
-        gt = 0;
         //Physic block
 
         if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
@@ -295,16 +262,16 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         }
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP == GLFW_PRESS))
-            curr.getCam()->Position.y += spCam * time->getDeltaTime();
+            curr.getCam()->Position.y += spCam * timer.GetUnscaleDeltaTime();
 
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN == GLFW_PRESS))
-            curr.getCam()->Position.y -= spCam * time->getDeltaTime();
+            curr.getCam()->Position.y -= spCam * timer.GetUnscaleDeltaTime();
 
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT == GLFW_PRESS))
-            curr.getCam()->Position.x -= spCam * time->getDeltaTime();
+            curr.getCam()->Position.x -= spCam * timer.GetUnscaleDeltaTime();
 
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT == GLFW_PRESS))
-            curr.getCam()->Position.x += spCam * time->getDeltaTime();
+            curr.getCam()->Position.x += spCam * timer.GetUnscaleDeltaTime();
 
         curr.getCam()->updateCameraVectors();
 
@@ -324,9 +291,9 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             ImGui::InputFloat("##2", &angleF);
             ImGui::Text("Время:");
             ImGui::SameLine();
-            ImGui::SliderFloat("##3", &value, 0.2f, 3.0f, "%.1f");
+            ImGui::SliderFloat("##3", &timer.TimeScale, 0.2f, 3.0f, "%.1f");
             ImGui::SameLine();
-            ImGui::Text("(x%.1f)", value);
+            ImGui::Text("(x%.1f)", timer.TimeScale);
         }
         ImGui::End();
 
@@ -387,14 +354,25 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
-        time->endFrame();
     }
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
-    time->~Time();
     glfwTerminate();
+
     return 0;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        physAct = !physAct;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    zoom = zoom - yoffset * sensS;
 }

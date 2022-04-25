@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "TextureManager.h"
+#include "ResourceManager.h"
 #include "Sprite.h"
 #include "TextSprite.h"
 #include "Camera.h"
@@ -12,7 +12,7 @@
 class Render
 {
 public:
-    Render(int width, int height, TextureManager* tm);
+    Render(int width, int height, ResourceManager* tm);
     virtual ~Render();
 
     void RenderSprite(Sprite* sp);
@@ -25,7 +25,7 @@ public:
     float Zoom = 1.0f;
 
 private:
-    TextureManager* texman;
+    ResourceManager* texman;
     Camera camActive;
     unsigned int boxVAO, tVAO, tVBO;
 };
