@@ -15,7 +15,7 @@ public:
         this->name = name; this->tag = tg;
     }
 
-    void setTexture(string text, string sh = "Standart") {
+    void setTexture(string text, string sh = "Standard") {
         this->texture = text;
         this->shader = sh;
     }

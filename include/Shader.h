@@ -12,7 +12,10 @@ private:
 public:
     Shader() = default;
     Shader(const std::string &vertexPath, const std::string &fragmentPath);
+    Shader(const Shader &shader) = delete;
     ~Shader();
+
+    Shader &operator=(const Shader &shader) = delete;
 
     bool Load(const std::string &vertexPath, const std::string &fragmentPath);
 
