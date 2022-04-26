@@ -23,20 +23,19 @@ struct Character {
 class ResourceManager {
 public:
     ResourceManager();
-    virtual ~ResourceManager();
 
-    [[nodiscard]] GLuint GetSprite(const std::string& name);
-    [[nodiscard]] Shader *GetShader(const std::string& name);
+    [[nodiscard]] inline const Character &GetCharacter(GLchar character) { return characters[character]; }
+    [[nodiscard]] inline GLuint GetTexture(const std::string &name) { return textures[name]; }
+    [[nodiscard]] inline const Shader &GetShader(const std::string &name) { return shaders[name]; }
 
-    void LoadTexture(const std::string& name, const std::string& path, int mode);
-    void LoadShader(const std::string& name, const std::string& path);
-    void LoadFont(const std::string& path);
-
-    std::map<GLchar, Character> Characters;
+    void LoadTexture(const std::string &name, const std::string &path, int mode);
+    void LoadShader(const std::string &name, const std::string &path);
+    void LoadFont(const std::string &path);
 
 private:
+    std::map<GLchar, Character> characters;
     std::map<std::string, GLuint> textures;
-    std::map<std::string, Shader*> shaders;
+    std::map<std::string, Shader> shaders;
 };
 
 #endif

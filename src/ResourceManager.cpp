@@ -11,14 +11,9 @@ ResourceManager::ResourceManager()
 	LoadTexture("ArrowYBody", "resources/textures/arrowYBody.png", 4);
 	LoadTexture("ArrowXEnd", "resources/textures/arrowXEnd.png", 4);
 	LoadTexture("ArrowYEnd", "resources/textures/arrowYEnd.png", 4);
-	LoadShader("Standart", "Standart");
+	LoadShader("Standard", "Standard");
 	LoadShader("Text", "Text");
     LoadFont("resources/Arial_AMU.ttf");
-}
-
-ResourceManager::~ResourceManager()
-{
-
 }
 
 void ResourceManager::LoadTexture(const std::string& name, const std::string& path, int mode)
@@ -48,17 +43,24 @@ void ResourceManager::LoadTexture(const std::string& name, const std::string& pa
 
 void ResourceManager::LoadShader(const std::string& name, const std::string& path)
 {
-    shaders[name] = new Shader(std::string("resources/shaders/" + path + "Vertex.glsl").c_str(), std::string("resources/shaders/" + path + "Fragment.glsl").c_str());
+    if (!shaders[name].Load("resources/shaders/" + path + "Vertex.glsl", "resources/shaders/" + path + "Fragment.glsl"))
+        shaders.erase(shaders.find(name));
 }
 
 void ResourceManager::LoadFont(const std::string& path)
 {
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
+    {
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        return;
+    }
     FT_Face face;
     if (FT_New_Face(ft, path.c_str(), 0, &face))
+    {
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        return;
+    }
 
     FT_Set_Pixel_Sizes(face, 0, 48);
 
@@ -68,7 +70,7 @@ void ResourceManager::LoadFont(const std::string& path)
     {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER))
         {
-            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            std::cout << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
             continue;
         }
 
@@ -98,19 +100,9 @@ void ResourceManager::LoadFont(const std::string& path)
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
             static_cast<GLuint>(face->glyph->advance.x)
         };
-        Characters.insert(std::pair<GLchar, Character>(c, character));
+        characters.insert(std::pair<GLchar, Character>(c, character));
     }
 
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
-}
-
-GLuint ResourceManager::GetSprite(const std::string& name)
-{
-    return textures[name];
-}
-
-Shader* ResourceManager::GetShader(const std::string& name)
-{
-    return shaders[name];
 }

@@ -46,6 +46,7 @@ set(Source
 	src/TextSprite.cpp
 	src/ResourceManager.cpp
 	src/Timer.cpp
+	src/Shader.cpp
 
 	src/ImGui/imgui_impl_glfw.cpp
 	src/ImGui/imgui_impl_opengl3.cpp

@@ -61,20 +61,20 @@ Render::~Render()
 
 void Render::RenderSprite(Sprite* s)
 {
-    Shader* ts = this->texman->GetShader(s->getShader());
+    const Shader &ts = this->texman->GetShader(s->getShader());
 
-    ts->Use();
+    ts.Use();
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(s->x, s->y, s->z));
     model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
     model = glm::scale(model, glm::vec3(s->sx, s->sy, 1));
 
-    ts->SetMat4("model", model);
-    ts->SetMat4("view", this->camActive.GetViewMatrix());
-    ts->SetMat4("projection", this->projMat);
+    ts.SetMat4("model", model);
+    ts.SetMat4("view", this->camActive.GetViewMatrix());
+    ts.SetMat4("projection", this->projMat);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, this->texman->GetSprite(s->getTexure()));
+    glBindTexture(GL_TEXTURE_2D, this->texman->GetTexture(s->getTexure()));
 
     glBindVertexArray(this->boxVAO);
 
@@ -83,21 +83,21 @@ void Render::RenderSprite(Sprite* s)
 
 void Render::RenderTextSprite(TextSprite* s, bool hd)
 {
-    Shader* ts = this->texman->GetShader("Text");
+    const Shader &ts = this->texman->GetShader("Text");
     float scale = 0.7f;
 
-    ts->Use();
+    ts.Use();
 
     glm::mat4 model = glm::mat4(1.0f);
     //model = glm::translate(model, glm::vec3(s->x - 114, s->y - 104, s->z));
     //model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
     //model = glm::scale(model, glm::vec3(s->sx, s->sy, 1));
 
-    ts->SetMat4("model", model);
-    ts->SetMat4("view", this->camActive.GetViewMatrix());
-    ts->SetMat4("projection", this->projMat);
+    ts.SetMat4("model", model);
+    ts.SetMat4("view", this->camActive.GetViewMatrix());
+    ts.SetMat4("projection", this->projMat);
 
-    ts->SetVec3("textColor", s->color);
+    ts.SetVec3("textColor", s->color);
     glBindVertexArray(this->tVAO);
 
     std::string text = s->getText();
@@ -112,7 +112,7 @@ void Render::RenderTextSprite(TextSprite* s, bool hd)
     std::string::const_iterator c;
     for (c = text.begin(); c != text.end(); c++)
     {
-        Character ch = this->texman->Characters[*c];
+        Character ch = this->texman->GetCharacter(*c);
 
         GLfloat xpos = x + ch.Bearing.x * scale;
         GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
@@ -156,5 +156,5 @@ Camera* Render::getCam()
 
 void Render::resizeW(int w, int h)
 {
-    this->projMat = glm::ortho( 0.f, w * this->Zoom + 0.f, 0.f, h * this->Zoom + 0.f, 0.1f, 100.0f);
+    this->projMat = glm::ortho(0.f, w * this->Zoom + 0.f, 0.f, h * this->Zoom + 0.f, 0.1f, 100.0f);
 }
