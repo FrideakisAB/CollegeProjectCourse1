@@ -17,10 +17,8 @@ Shader::~Shader()
 
 bool Shader::Load(const std::string &vertexPath, const std::string &fragmentPath)
 {
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::ifstream vertexShaderFile;
-    std::ifstream fragmentShaderFile;
+    std::string vertexCode, fragmentCode;
+    std::ifstream vertexShaderFile, fragmentShaderFile;
 
     vertexShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fragmentShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -46,24 +44,32 @@ bool Shader::Load(const std::string &vertexPath, const std::string &fragmentPath
         return false;
     }
 
-    const char *vertexShaderCode = vertexCode.c_str();
-    const char *fragmentShaderCode = fragmentCode.c_str();
+    return LoadSource(vertexCode, fragmentCode);
+}
 
+bool Shader::LoadSource(const std::string &vertexSrc, const std::string &fragmentSrc)
+{
     bool isCorrect = true;
 
     GLuint vertex, fragment;
 
+    const char *vertexSrcC = vertexSrc.c_str();
+    const char *fragmentSrcC = fragmentSrc.c_str();
+
     vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vertexShaderCode, nullptr);
+    glShaderSource(vertex, 1, &vertexSrcC, nullptr);
     glCompileShader(vertex);
     if (!checkCompileErrors(vertex, "VERTEX"))
         isCorrect = false;
 
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fragmentShaderCode, nullptr);
+    glShaderSource(fragment, 1, &fragmentSrcC, nullptr);
     glCompileShader(fragment);
     if (!checkCompileErrors(fragment, "FRAGMENT"))
         isCorrect = false;
+
+    if (id != 0)
+        glDeleteProgram(id);
 
     id = glCreateProgram();
     glAttachShader(id, vertex);

@@ -18,6 +18,7 @@ public:
     Shader &operator=(const Shader &shader) = delete;
 
     bool Load(const std::string &vertexPath, const std::string &fragmentPath);
+    bool LoadSource(const std::string &vertexSrc, const std::string &fragmentSrc);
 
     [[nodiscard]] bool IsValid() const noexcept
     {

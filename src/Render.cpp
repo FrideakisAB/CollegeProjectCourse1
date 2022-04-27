@@ -1,8 +1,9 @@
+#include <imgui.h>
 #include "Render.h"
 
 Render::Render(int width, int height, ResourceManager* tx)
 {
-    this->projMat = glm::ortho( 0.f, width * this->Zoom + 0.f, 0.f, height * this->Zoom + 0.f, 0.1f, 100.0f);
+    this->projMat = glm::ortho(0.f, width * this->Zoom + 0.f, 0.f, height * this->Zoom + 0.f, 0.1f, 100.0f);
     this->texman = tx;
 
     glEnable(GL_BLEND);
@@ -42,21 +43,11 @@ Render::Render(int width, int height, ResourceManager* tx)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
-    glGenVertexArrays(1, &tVAO);
-    glGenBuffers(1, &tVBO);
-    glBindVertexArray(tVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, tVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 }
 
 Render::~Render()
 {
-    //dtor
+
 }
 
 void Render::RenderSprite(Sprite* s)
@@ -74,7 +65,7 @@ void Render::RenderSprite(Sprite* s)
     ts.SetMat4("projection", this->projMat);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, this->texman->GetTexture(s->getTexure()));
+    glBindTexture(GL_TEXTURE_2D, this->texman->GetTexture(s->getTexture()));
 
     glBindVertexArray(this->boxVAO);
 
@@ -83,65 +74,18 @@ void Render::RenderSprite(Sprite* s)
 
 void Render::RenderTextSprite(TextSprite* s, bool hd)
 {
-    const Shader &ts = this->texman->GetShader("Text");
-    float scale = 0.7f;
+    glm::vec4 position = projMat * camActive.GetViewMatrix() * glm::vec4(s->x, s->y, s->z, 1.0f);
 
-    ts.Use();
+    auto size = ImGui::GetWindowSize();
 
-    glm::mat4 model = glm::mat4(1.0f);
-    //model = glm::translate(model, glm::vec3(s->x - 114, s->y - 104, s->z));
-    //model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-    //model = glm::scale(model, glm::vec3(s->sx, s->sy, 1));
+    auto text = s->getText();
 
-    ts.SetMat4("model", model);
-    ts.SetMat4("view", this->camActive.GetViewMatrix());
-    ts.SetMat4("projection", this->projMat);
+    auto textSize = ImGui::CalcTextSize(text.c_str());
 
-    ts.SetVec3("textColor", s->color);
-    glBindVertexArray(this->tVAO);
-
-    std::string text = s->getText();
-    float x = s->x;
-    float y = s->y;
-    float eps = 0;
-    if(hd)
-        x -= 7.4f * text.size();
-    else
-        x -= 3 * text.size();
-    // Iterate through all characters
-    std::string::const_iterator c;
-    for (c = text.begin(); c != text.end(); c++)
-    {
-        Character ch = this->texman->GetCharacter(*c);
-
-        GLfloat xpos = x + ch.Bearing.x * scale;
-        GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
-
-        GLfloat w = ch.Size.x * scale;
-        GLfloat h = ch.Size.y * scale;
-        // Update VBO for each character
-        GLfloat vertices[6][4] = {
-            { xpos, ypos + h, 0.0, 0.0 },
-            { xpos, ypos, 0.0, 1.0 },
-            { xpos + w, ypos, 1.0, 1.0 },
-            { xpos, ypos + h, 0.0, 0.0 },
-            { xpos + w, ypos, 1.0, 1.0 },
-            { xpos + w, ypos + h, 1.0, 0.0 }
-        };
-        // Render glyph texture over quad
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-        // Update content of VBO memory
-        glBindBuffer(GL_ARRAY_BUFFER, tVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // Render quad
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
-    }
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    ImGui::SetCursorPos({position.x * size.x / 2 + size.x / 2 - textSize.x / 2, size.y - (position.y * size.y / 2 + size.y / 2) - textSize.y / 2});
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(s->color.r, s->color.g, s->color.b, 1.0f));
+    ImGui::Text(text.c_str());
+    ImGui::PopStyleColor();
 }
 
 void Render::setCam(Camera cam)

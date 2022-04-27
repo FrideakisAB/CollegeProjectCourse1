@@ -204,8 +204,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         curr.RenderSprite(&arrXE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        curr.RenderTextSprite(&txtX);
-        curr.RenderTextSprite(&txtY, true);
 
         //Physic block
         if (t != tp)
@@ -278,6 +276,14 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        ImGui::SetNextWindowPos({0, 0});
+        ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
+        ImGui::SetNextWindowBgAlpha(0.0f);
+        ImGui::Begin("##1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar);
+        curr.RenderTextSprite(&txtX);
+        curr.RenderTextSprite(&txtY, true);
+        ImGui::End();
 
         ImGui::SetNextWindowPos({0, 0});
         ImGui::SetNextWindowSize({365, 130});

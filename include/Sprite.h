@@ -24,7 +24,7 @@ public:
         return this->shader;
     }
 
-    string getTexure() {
+    string getTexture() {
         return this->texture;
     }
 
