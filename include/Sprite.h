@@ -2,49 +2,14 @@
 #define SPRITE_H
 
 #include <string>
+#include "GameObject.h"
 
-using namespace std;
-
-class Sprite
-{
+class Sprite final : public GameObject {
 public:
-    bool active = true;
-    float x, y, z, sx, sy;
+    explicit Sprite(std::string name);
+    ~Sprite() final = default;
 
-    Sprite(string name, string tg = "") {
-        this->name = name; this->tag = tg;
-    }
-
-    void setTexture(string text, string sh = "Standard") {
-        this->texture = text;
-        this->shader = sh;
-    }
-
-    string getShader() {
-        return this->shader;
-    }
-
-    string getTexture() {
-        return this->texture;
-    }
-
-    string getTag() {
-        return this->tag;
-    }
-
-    void setTag(string t) {
-        this->tag = t;
-    }
-
-    string getName() {
-        return this->name;
-    }
-
-    void setName(string t) {
-        this->name = t;
-    }
-private:
-    string texture, name, tag, shader;
+    std::string Texture, Shader;
 };
 
-#endif // SPRITE_H
+#endif

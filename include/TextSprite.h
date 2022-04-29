@@ -2,24 +2,16 @@
 #define TEXTSPRITE_H
 
 #include <string>
-#include "Sprite.h"
 #include <glm/glm.hpp>
+#include "GameObject.h"
 
-class TextSprite
-{
+class TextSprite final : public GameObject {
 public:
-    float x, y, z, sx, sy;
+    explicit TextSprite(std::string name) { Name = std::move(name); }
+    ~TextSprite() final = default;
 
-    TextSprite(std::string name, std::string tg = "");
-    virtual ~TextSprite();
-
-    void setText(std::string txt);
-    std::string getText();
-
-    glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
-
-private:
-    std::string txt = "";
+    glm::vec3 Color = glm::vec3(0.0f, 0.0f, 0.0f);
+    std::string Text;
 };
 
-#endif // TEXTSPRITE_H
+#endif

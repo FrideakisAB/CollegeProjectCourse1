@@ -52,39 +52,37 @@ Render::~Render()
 
 void Render::RenderSprite(Sprite* s)
 {
-    const Shader &ts = this->texman->GetShader(s->getShader());
+    const Shader &ts = this->texman->GetShader(s->Shader);
 
     ts.Use();
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(s->x, s->y, s->z));
+    model = glm::translate(model, s->Position);
     model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-    model = glm::scale(model, glm::vec3(s->sx, s->sy, 1));
+    model = glm::scale(model, glm::vec3(s->Scale.x, s->Scale.y, 1));
 
     ts.SetMat4("model", model);
     ts.SetMat4("view", this->camActive.GetViewMatrix());
     ts.SetMat4("projection", this->projMat);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, this->texman->GetTexture(s->getTexture()));
+    glBindTexture(GL_TEXTURE_2D, this->texman->GetTexture(s->Texture));
 
     glBindVertexArray(this->boxVAO);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
 
 void Render::RenderTextSprite(TextSprite* s, bool hd)
 {
-    glm::vec4 position = projMat * camActive.GetViewMatrix() * glm::vec4(s->x, s->y, s->z, 1.0f);
+    glm::vec4 position = projMat * camActive.GetViewMatrix() * glm::vec4(s->Position.x, s->Position.y, s->Position.z, 1.0f);
 
     auto size = ImGui::GetWindowSize();
 
-    auto text = s->getText();
-
-    auto textSize = ImGui::CalcTextSize(text.c_str());
+    auto textSize = ImGui::CalcTextSize(s->Text.c_str());
 
     ImGui::SetCursorPos({position.x * size.x / 2 + size.x / 2 - textSize.x / 2, size.y - (position.y * size.y / 2 + size.y / 2) - textSize.y / 2});
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(s->color.r, s->color.g, s->color.b, 1.0f));
-    ImGui::Text(text.c_str());
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(s->Color.r, s->Color.g, s->Color.b, 1.0f));
+    ImGui::Text(s->Text.c_str());
     ImGui::PopStyleColor();
 }
 

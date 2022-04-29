@@ -85,50 +85,59 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     ImGui_ImplOpenGL3_Init("#version 460");
 
     Timer timer;
-    ResourceManager* tm = new ResourceManager();
+    auto* resourceManager = new ResourceManager();
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
     Camera cam(glm::vec3(-80.0f, 0.0f, 1.0f));
-    Render curr(width, height, tm);
+    Render curr(width, height, resourceManager);
     curr.setCam(cam);
 
     ///Game objects
     Sprite sp1("sp1");
-    sp1.setTexture("Ball");
-    sp1.x = 102; sp1.y = 101; sp1.z = -2; sp1.sx = 50; sp1.sy = 50;
+    sp1.Texture ="Ball";
+    sp1.Position = glm::vec3(102, 101, -2);
+    sp1.Scale = glm::vec2(50, 50);
 
     Sprite sp2("sp2");
-    sp2.setTexture("PBall");
-    sp2.x = 102; sp2.y = 101; sp2.z = -3; sp2.sx = 5; sp2.sy = 5;
+    sp2.Texture ="PBall";
+    sp2.Position = glm::vec3(102, 101, -3);
+    sp2.Scale = glm::vec2(5, 5);
 
     Sprite arrS("napr");
-    arrS.setTexture("ArrowStart");
-    arrS.x = 127; arrS.y = 135; arrS.z = -1; arrS.sx = 150; arrS.sy = 150;
+    arrS.Texture ="ArrowStart";
+    arrS.Position = glm::vec3(127, 135, -1);
+    arrS.Scale = glm::vec2(150, 150);
 
     Sprite arrB("napr");
-    arrB.setTexture("ArrowYBody");
-    arrB.x = 127; arrB.y = 90 + (ymax * 15 + 120) * ny / 2; arrB.z = -1; arrB.sx = 150; arrB.sy = (ymax * 15 + 100) * ny;
+    arrB.Texture ="ArrowYBody";
+    arrB.Position = glm::vec3(127, 90 + (ymax * 15 + 120) * ny / 2, -1);
+    arrB.Scale = glm::vec2(150, (ymax * 15 + 100) * ny);
     Sprite arrBX("napr");
-    arrBX.setTexture("ArrowXBody");
-    arrBX.x = 92 + (xmax * 15 + 100) * nx / 2; arrBX.y = 135; arrBX.z = -1; arrBX.sx = (xmax * 15 + 100) * nx; arrBX.sy = 150;
+    arrBX.Texture ="ArrowXBody";
+    arrBX.Position = glm::vec3(92 + (xmax * 15 + 100) * nx / 2, 135, -1);
+    arrBX.Scale = glm::vec2((xmax * 15 + 100) * nx, 150);
 
     Sprite arrYE("napr");
-    arrYE.setTexture("ArrowYEnd");
-    arrYE.x = 127; arrYE.y = 90 + (ymax * 15 + 120) * ny + 75; arrYE.z = -1; arrYE.sx = 150; arrYE.sy = 150;
+    arrYE.Texture ="ArrowYEnd";
+    arrYE.Position = glm::vec3(127, 90 + (ymax * 15 + 120) * ny + 75, -1);
+    arrYE.Scale = glm::vec2(150, 150);
     Sprite arrXE("napr");
-    arrXE.setTexture("ArrowXEnd");
-    arrXE.x = 92 + (xmax * 15 + 100) * nx + 75; arrXE.y = 135; arrXE.z = -1; arrXE.sx = 150; arrXE.sy = 150;
+    arrXE.Texture ="ArrowXEnd";
+    arrXE.Position = glm::vec3(92 + (xmax * 15 + 100) * nx + 75, 135, -1);
+    arrXE.Scale = glm::vec2(150, 150);
 
     TextSprite txtX("textXaxis");
-    txtX.x = 102; txtX.y = 34; txtX.z = -2; txtX.sx = 200; txtX.sy = 200;
-    txtX.setText("17893s");
+    txtX.Position = glm::vec3(102, 34, -2);
+    txtX.Scale = glm::vec2(200, 200);
+    txtX.Text = "17893s";
 
     TextSprite txtY("textYaxis");
-    txtY.x = 0; txtY.y = 34; txtY.z = -2; txtY.sx = 200; txtY.sy = 200;
-    txtY.setText("17893s");
+    txtX.Position = glm::vec3(0, 34, -2);
+    txtX.Scale = glm::vec2(200, 200);
+    txtX.Text = "17893s";
     ///Game objects end
 
     float velF = Vo, angleF = angle;
@@ -185,15 +194,15 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         glClearColor(0.6f, 1.f, 0.68f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        arrB.y = 90 + (ymax * 15 + 120) * ny / 2; arrB.sy = (ymax * 15 + 120) * ny;
-        arrBX.x = 92 + (xmax * 15 + 100) * nx / 2; arrBX.sx = (xmax * 15 + 100) * nx;
+        arrB.Position.y = 90 + (ymax * 15 + 120) * ny / 2; arrB.Scale.y = (ymax * 15 + 120) * ny;
+        arrBX.Position.x = 92 + (xmax * 15 + 100) * nx / 2; arrBX.Scale.x = (xmax * 15 + 100) * nx;
 
-        arrYE.y = 90 + (ymax * 15 + 120) * ny + 75;
-        arrXE.x = 92 + (xmax * 15 + 100) * nx + 75;
+        arrYE.Position.y = 90 + (ymax * 15 + 120) * ny + 75;
+        arrXE.Position.x = 92 + (xmax * 15 + 100) * nx + 75;
 
         for(int i = 0; i < points.size(); i+= 2)
         {
-            sp2.x = points[i]; sp2.y = points[i + 1];
+            sp2.Position.x = points[i]; sp2.Position.y = points[i + 1];
             curr.RenderSprite(&sp2);
         }
         curr.RenderSprite(&sp1);
@@ -202,8 +211,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         curr.RenderSprite(&arrS);
         curr.RenderSprite(&arrYE);
         curr.RenderSprite(&arrXE);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         //Physic block
         if (t != tp)
@@ -221,37 +228,33 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             x = Vo * ca * t;
             y = Vo * sa * t - 4.905f * t * t;
 
-            sp1.x = 102 + x * 15.0f;
+            sp1.Position.x = 102 + x * 15.0f;
             if(y < 0.0f)
                 y = 0;
-            sp1.y = 101 + y * 15.0f;
-            if(sp1.y < 101)
-                sp1.y = 101;
+            sp1.Position.y = 101 + y * 15.0f;
+            if(sp1.Position.y < 101)
+                sp1.Position.y = 101;
 
-            txtX.x = sp1.x;
-            txtY.y = sp1.y - 10;
+            txtX.Position.x = sp1.Position.x;
+            txtY.Position.y = sp1.Position.y - 10;
             std::ostringstream ss;
             ss << std::floor(x * 100 + 0.5) / 100;
             std::string s(ss.str() + "m");
-            txtX.setText(s);
+            txtX.Text = s;
             std::ostringstream yss;
             yss << std::floor(y * 100 + 0.5) / 100;
             std::string ys(yss.str() + "m");
-            txtY.setText(ys);
+            txtY.Text = ys;
 
-            points.push_back(sp1.x);
-            points.push_back(sp1.y);
+            points.push_back(sp1.Position.x);
+            points.push_back(sp1.Position.y);
         }
         //Physic block
 
         if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        {
             spCam = 200;
-        }
         else
-        {
             spCam = 80;
-        }
 
         if(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
         {
@@ -271,8 +274,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT == GLFW_PRESS))
             curr.getCam()->Position.x += spCam * timer.GetUnscaleDeltaTime();
 
-        curr.getCam()->updateCameraVectors();
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -280,7 +281,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         ImGui::SetNextWindowPos({0, 0});
         ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
         ImGui::SetNextWindowBgAlpha(0.0f);
-        ImGui::Begin("##1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar);
+        ImGui::Begin("##1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
+                                     ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus);
         curr.RenderTextSprite(&txtX);
         curr.RenderTextSprite(&txtY, true);
         ImGui::End();
