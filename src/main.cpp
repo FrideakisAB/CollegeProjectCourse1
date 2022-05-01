@@ -17,30 +17,21 @@ namespace fs = std::filesystem;
 
 #define PI 3.14159265
 
-static bool physAct = false;
-static float Vo = 18;
-static float angle = 30;
-static float sa = sin(angle * PI / 180);
-static float ca = cos(angle * PI / 180);
-static float tp = (Vo / 4.9f) * sa;
-static float xmax = Vo * ca * tp;
-static float ymax = Vo * sa * 0.5f * tp - 4.9f * 0.25f * tp * tp;
-static float t = 0.f;
-static float tr = 0.f;
-static float ny = 1.0f;
-static float nx = 1.0f;
-static float zoom = 1.0f;
-static float sensS = 0.03f;
-static float x, y;
-static int spCam = 80;
-static std::vector<float> points;
+bool isSimulationActive = false;
+const float yScale = 1.f;
+const float xScale = 1.f;
+
+float zoom = 1.0f;
+const float zoomSens = 0.03f;
+const float cameraSpeed = 80.f;
+const float cameraShiftSpeed = 2.5f;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWinMode)
 {
-    if(!glfwInit())
+    if (!glfwInit())
         return -1;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -82,18 +73,34 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         io.Fonts->AddFontFromFileTTF("resources/Arial_AMU.ttf", 18.5f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    ImGui_ImplOpenGL3_Init("#version 330");
 
     Timer timer;
-    auto* resourceManager = new ResourceManager();
+    ResourceManager resourceManager;
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
     Camera cam(glm::vec3(-80.0f, 0.0f, 1.0f));
-    Render curr(width, height, resourceManager);
+    Render curr(width, height, &resourceManager);
     curr.setCam(cam);
+
+    //Simulation block
+    float startSpeed = 18;
+    static float angle = 30;
+    static float sinAngle = sin(angle * PI / 180);
+    static float cosAngle = cos(angle * PI / 180);
+
+    float simulationTime = 0.f;float simulationEndTime = (startSpeed / 4.9f) * sinAngle;
+
+    float throwDistance = startSpeed * cosAngle * simulationEndTime;
+    float maxHeight = startSpeed * sinAngle * 0.5f * simulationEndTime - 4.9f * 0.25f * simulationEndTime * simulationEndTime;
+
+    float x, y;
+
+    std::vector<float> points;
+    //
 
     ///Game objects
     Sprite sp1("sp1");
@@ -113,20 +120,20 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
     Sprite arrB("napr");
     arrB.Texture ="ArrowYBody";
-    arrB.Position = glm::vec3(127, 90 + (ymax * 15 + 120) * ny / 2, -1);
-    arrB.Scale = glm::vec2(150, (ymax * 15 + 100) * ny);
+    arrB.Position = glm::vec3(127, 90 + (maxHeight * 15 + 120) * yScale / 2, -1);
+    arrB.Scale = glm::vec2(150, (maxHeight * 15 + 100) * yScale);
     Sprite arrBX("napr");
     arrBX.Texture ="ArrowXBody";
-    arrBX.Position = glm::vec3(92 + (xmax * 15 + 100) * nx / 2, 135, -1);
-    arrBX.Scale = glm::vec2((xmax * 15 + 100) * nx, 150);
+    arrBX.Position = glm::vec3(92 + (throwDistance * 15 + 100) * xScale / 2, 135, -1);
+    arrBX.Scale = glm::vec2((throwDistance * 15 + 100) * xScale, 150);
 
     Sprite arrYE("napr");
     arrYE.Texture ="ArrowYEnd";
-    arrYE.Position = glm::vec3(127, 90 + (ymax * 15 + 120) * ny + 75, -1);
+    arrYE.Position = glm::vec3(127, 90 + (maxHeight * 15 + 120) * yScale + 75, -1);
     arrYE.Scale = glm::vec2(150, 150);
     Sprite arrXE("napr");
     arrXE.Texture ="ArrowXEnd";
-    arrXE.Position = glm::vec3(92 + (xmax * 15 + 100) * nx + 75, 135, -1);
+    arrXE.Position = glm::vec3(92 + (throwDistance * 15 + 100) * xScale + 75, 135, -1);
     arrXE.Scale = glm::vec2(150, 150);
 
     TextSprite txtX("textXaxis");
@@ -140,26 +147,26 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     txtX.Text = "17893s";
     ///Game objects end
 
-    float velF = Vo, angleF = angle;
-    while(!glfwWindowShouldClose(window))
+    float velF = startSpeed, angleF = angle;
+    while (!glfwWindowShouldClose(window))
     {
         timer.Tick();
         glfwPollEvents();
 
-        if(physAct && t != tp)
+        if (isSimulationActive && simulationTime != simulationEndTime)
             glfwSetWindowTitle(window, "Симуляция...");
-        else if(t != tp)
+        else if (simulationTime != simulationEndTime)
             glfwSetWindowTitle(window, "Пауза");
         else
             glfwSetWindowTitle(window, "Cимуляция окончена");
 
-        if (velF != Vo || angleF != angle)
+        if (velF != startSpeed || angleF != angle)
         {
             if (velF >= 0)
-                Vo = velF;
+                startSpeed = velF;
             else
             {
-                Vo = 0;
+                startSpeed = 0;
                 velF = 0;
             }
 
@@ -176,13 +183,13 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
                 angleF = 0.0f;
             }
 
-            sa = sin(angle * PI / 180);
-            ca = cos(angle * PI / 180);
-            tp = (Vo / 4.9f) * sa;
-            xmax = Vo * ca * tp;
-            ymax = Vo * sa * 0.5f * tp - 4.9f * 0.25f * tp * tp;
+            sinAngle = sin(angle * PI / 180);
+            cosAngle = cos(angle * PI / 180);
+            simulationEndTime = (startSpeed / 4.9f) * sinAngle;
+            throwDistance = startSpeed * cosAngle * simulationEndTime;
+            maxHeight = startSpeed * sinAngle * 0.5f * simulationEndTime - 4.9f * 0.25f * simulationEndTime * simulationEndTime;
 
-            t = tr;
+            simulationTime = 0.f;
             points.erase(points.begin(), points.end());
         }
 
@@ -194,17 +201,18 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         glClearColor(0.6f, 1.f, 0.68f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        arrB.Position.y = 90 + (ymax * 15 + 120) * ny / 2; arrB.Scale.y = (ymax * 15 + 120) * ny;
-        arrBX.Position.x = 92 + (xmax * 15 + 100) * nx / 2; arrBX.Scale.x = (xmax * 15 + 100) * nx;
+        arrB.Position.y = 90 + (maxHeight * 15 + 120) * yScale / 2; arrB.Scale.y = (maxHeight * 15 + 120) * yScale;
+        arrBX.Position.x = 92 + (throwDistance * 15 + 100) * xScale / 2; arrBX.Scale.x = (throwDistance * 15 + 100) * xScale;
 
-        arrYE.Position.y = 90 + (ymax * 15 + 120) * ny + 75;
-        arrXE.Position.x = 92 + (xmax * 15 + 100) * nx + 75;
+        arrYE.Position.y = 90 + (maxHeight * 15 + 120) * yScale + 75;
+        arrXE.Position.x = 92 + (throwDistance * 15 + 100) * xScale + 75;
 
-        for(int i = 0; i < points.size(); i+= 2)
+        for (int i = 0; i < points.size(); i+= 2)
         {
             sp2.Position.x = points[i]; sp2.Position.y = points[i + 1];
             curr.RenderSprite(&sp2);
         }
+
         curr.RenderSprite(&sp1);
         curr.RenderSprite(&arrB);
         curr.RenderSprite(&arrBX);
@@ -213,66 +221,80 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         curr.RenderSprite(&arrXE);
 
         //Physic block
-        if (t != tp)
+        if (simulationTime != simulationEndTime)
         {
-            if (t < tp)
+            if (simulationTime < simulationEndTime)
             {
-                if (physAct)
-                    t += timer.GetDeltaTime();
+                if (isSimulationActive)
+                    simulationTime += timer.GetDeltaTime();
             }
             else
-            {
-                t = tp;
-            }
+                simulationTime = simulationEndTime;
 
-            x = Vo * ca * t;
-            y = Vo * sa * t - 4.905f * t * t;
+            x = startSpeed * cosAngle * simulationTime;
+            y = startSpeed * sinAngle * simulationTime - 4.905f * simulationTime * simulationTime;
 
             sp1.Position.x = 102 + x * 15.0f;
-            if(y < 0.0f)
+            if (y < 0.0f)
                 y = 0;
             sp1.Position.y = 101 + y * 15.0f;
-            if(sp1.Position.y < 101)
+            if (sp1.Position.y < 101)
                 sp1.Position.y = 101;
 
             txtX.Position.x = sp1.Position.x;
             txtY.Position.y = sp1.Position.y - 10;
-            std::ostringstream ss;
-            ss << std::floor(x * 100 + 0.5) / 100;
-            std::string s(ss.str() + "m");
-            txtX.Text = s;
-            std::ostringstream yss;
-            yss << std::floor(y * 100 + 0.5) / 100;
-            std::string ys(yss.str() + "m");
-            txtY.Text = ys;
+
+            std::stringstream ss;
+            ss << std::floor(x * 100 + 0.5) / 100 << 'm';
+            txtX.Text = ss.str();
+
+            ss = std::stringstream();
+
+            ss << std::floor(y * 100 + 0.5) / 100 << 'm';
+            txtY.Text = ss.str();
 
             points.push_back(sp1.Position.x);
             points.push_back(sp1.Position.y);
         }
         //Physic block
 
-        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-            spCam = 200;
-        else
-            spCam = 80;
-
-        if(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
         {
-            t = tr;
+            simulationTime = 0.f;
             points.erase(points.begin(), points.end());
         }
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP == GLFW_PRESS))
-            curr.getCam()->Position.y += spCam * timer.GetUnscaleDeltaTime();
+        {
+            float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
+            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+                deltaPosition = deltaPosition * cameraShiftSpeed;
+            curr.getCam()->Position.y += deltaPosition;
+        }
 
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN == GLFW_PRESS))
-            curr.getCam()->Position.y -= spCam * timer.GetUnscaleDeltaTime();
+        {
+            float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
+            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+                deltaPosition = deltaPosition * cameraShiftSpeed;
+            curr.getCam()->Position.y -= deltaPosition;
+        }
 
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT == GLFW_PRESS))
-            curr.getCam()->Position.x -= spCam * timer.GetUnscaleDeltaTime();
+        {
+            float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
+            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+                deltaPosition = deltaPosition * cameraShiftSpeed;
+            curr.getCam()->Position.x -= deltaPosition;
+        }
 
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT == GLFW_PRESS))
-            curr.getCam()->Position.x += spCam * timer.GetUnscaleDeltaTime();
+        {
+            float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
+            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+                deltaPosition = deltaPosition * cameraShiftSpeed;
+            curr.getCam()->Position.x += deltaPosition;
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -377,10 +399,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-        physAct = !physAct;
+        isSimulationActive = !isSimulationActive;
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    zoom = zoom - yoffset * sensS;
+    zoom = std::clamp(zoom - static_cast<float>(yoffset) * zoomSens, 0.2f, 3.0f);
 }
