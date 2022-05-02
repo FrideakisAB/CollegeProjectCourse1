@@ -1,4 +1,4 @@
-#include "Shader.h"
+#include "Render/Shader.h"
 
 #include <fstream>
 #include <sstream>
@@ -92,7 +92,11 @@ bool Shader::LoadSource(const std::string &vertexSrc, const std::string &fragmen
 
 void Shader::Use() const
 {
-    glUseProgram(id);
+    if (currentUse != id)
+    {
+        glUseProgram(id);
+        currentUse = id;
+    }
 }
 
 void Shader::SetBool(const std::string &name, bool value) const

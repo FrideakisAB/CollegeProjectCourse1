@@ -3,15 +3,16 @@
 #include <GLFW/glfw3.h>
 #include "Timer.h"
 #include "ResourceManager.h"
-#include "Render.h"
-#include "Sprite.h"
-#include "TextSprite.h"
+#include "Render/Render.h"
+#include "Game/Sprite.h"
+#include "Game/TextSprite.h"
 #include <cmath>
 #include <string>
 #include <imgui.h>
 #include <filesystem>
 #include "ImGui/imgui_impl_glfw.h"
 #include "ImGui/imgui_impl_opengl3.h"
+#include "Engine.h"
 
 namespace fs = std::filesystem;
 
@@ -23,6 +24,9 @@ const float xScale = 1.f;
 
 float zoom = 1.0f;
 const float zoomSens = 0.03f;
+const float zoomMin = 0.2f;
+const float zoomMax = 3.f;
+
 const float cameraSpeed = 80.f;
 const float cameraShiftSpeed = 2.5f;
 
@@ -75,16 +79,17 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    Timer timer;
-    ResourceManager resourceManager;
+    Engine engine;
+
+    Timer &timer = engine.GetTimer();
+    ResourceManager &resourceManager = engine.GetResourceManager();
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
     Camera cam(glm::vec3(-80.0f, 0.0f, 1.0f));
-    Render curr(width, height, &resourceManager);
-    curr.setCam(cam);
+    Render curr(width, height);
 
     //Simulation block
     float startSpeed = 18;
@@ -92,7 +97,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     static float sinAngle = sin(angle * PI / 180);
     static float cosAngle = cos(angle * PI / 180);
 
-    float simulationTime = 0.f;float simulationEndTime = (startSpeed / 4.9f) * sinAngle;
+    float simulationTime = 0.f;
+    float simulationEndTime = (startSpeed / 4.9f) * sinAngle;
 
     float throwDistance = startSpeed * cosAngle * simulationEndTime;
     float maxHeight = startSpeed * sinAngle * 0.5f * simulationEndTime - 4.9f * 0.25f * simulationEndTime * simulationEndTime;
@@ -153,6 +159,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         timer.Tick();
         glfwPollEvents();
 
+        engine.OnUpdate();
+
         if (isSimulationActive && simulationTime != simulationEndTime)
             glfwSetWindowTitle(window, "Симуляция...");
         else if (simulationTime != simulationEndTime)
@@ -196,7 +204,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         glfwGetFramebufferSize(window, &width, &height);
         glViewport(0, 0, width, height);
         curr.Zoom = zoom;
-        curr.resizeW(width, height);
+        curr.ResizeWindow(width, height);
 
         glClearColor(0.6f, 1.f, 0.68f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -212,6 +220,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             sp2.Position.x = points[i]; sp2.Position.y = points[i + 1];
             curr.RenderSprite(&sp2);
         }
+
+        engine.OnRender();
 
         curr.RenderSprite(&sp1);
         curr.RenderSprite(&arrB);
@@ -269,7 +279,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
             if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
                 deltaPosition = deltaPosition * cameraShiftSpeed;
-            curr.getCam()->Position.y += deltaPosition;
+            Camera::Main.value().get().Position.y += deltaPosition;
         }
 
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN == GLFW_PRESS))
@@ -277,7 +287,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
             if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
                 deltaPosition = deltaPosition * cameraShiftSpeed;
-            curr.getCam()->Position.y -= deltaPosition;
+            Camera::Main.value().get().Position.y -= deltaPosition;
         }
 
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT == GLFW_PRESS))
@@ -285,7 +295,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
             if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
                 deltaPosition = deltaPosition * cameraShiftSpeed;
-            curr.getCam()->Position.x -= deltaPosition;
+            Camera::Main.value().get().Position.x -= deltaPosition;
         }
 
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT == GLFW_PRESS))
@@ -293,12 +303,14 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             float deltaPosition = zoom * cameraSpeed * timer.GetUnscaleDeltaTime();
             if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
                 deltaPosition = deltaPosition * cameraShiftSpeed;
-            curr.getCam()->Position.x += deltaPosition;
+            Camera::Main.value().get().Position.x += deltaPosition;
         }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        engine.OnUIRender();
 
         ImGui::SetNextWindowPos({0, 0});
         ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
@@ -306,7 +318,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         ImGui::Begin("##1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
                                      ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus);
         curr.RenderTextSprite(&txtX);
-        curr.RenderTextSprite(&txtY, true);
+        curr.RenderTextSprite(&txtY);
         ImGui::End();
 
         ImGui::SetNextWindowPos({0, 0});
@@ -404,5 +416,5 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    zoom = std::clamp(zoom - static_cast<float>(yoffset) * zoomSens, 0.2f, 3.0f);
+    zoom = std::clamp(zoom - static_cast<float>(yoffset) * zoomSens, zoomMin, zoomMax);
 }

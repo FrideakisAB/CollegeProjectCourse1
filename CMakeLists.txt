@@ -42,11 +42,14 @@ endif()
 
 set(Source
 	src/main.cpp
-	src/Render.cpp
+	src/Engine.cpp
 	src/ResourceManager.cpp
 	src/Timer.cpp
-	src/Shader.cpp
-	src/Sprite.cpp
+
+	src/Game/Sprite.cpp
+
+	src/Render/Render.cpp
+	src/Render/Shader.cpp
 
 	src/ImGui/imgui_impl_glfw.cpp
 	src/ImGui/imgui_impl_opengl3.cpp

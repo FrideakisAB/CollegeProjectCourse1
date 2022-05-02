@@ -9,6 +9,8 @@ class Shader {
 private:
     GLuint id = 0;
 
+    static inline GLuint currentUse = 0;
+
 public:
     Shader() = default;
     Shader(const std::string &vertexPath, const std::string &fragmentPath);
