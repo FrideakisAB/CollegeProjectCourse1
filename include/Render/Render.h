@@ -22,7 +22,10 @@ public:
     glm::mat4 ProjectMat = glm::mat4(1.f);
     float Zoom = 1.0f;
 
+    [[nodiscard]] glm::ivec2 GetWindowSize() const noexcept { return {width, height}; }
+
 private:
+    int width, height;
     unsigned int boxVAO{};
 };
 

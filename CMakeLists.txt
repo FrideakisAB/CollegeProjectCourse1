@@ -42,11 +42,15 @@ endif()
 
 set(Source
 	src/main.cpp
+	src/Timer.cpp
 	src/Engine.cpp
 	src/ResourceManager.cpp
-	src/Timer.cpp
 
 	src/Game/Sprite.cpp
+	src/Game/Simulation.cpp
+
+	src/Game/UI/InfoWindow.cpp
+	src/Game/UI/ControlWindow.cpp
 
 	src/Render/Render.cpp
 	src/Render/Shader.cpp

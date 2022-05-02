@@ -3,7 +3,8 @@
 #include <imgui.h>
 #include "Engine.h"
 
-Render::Render(int width, int height)
+Render::Render(int width, int height) :
+    width(width), height(height)
 {
     ProjectMat = glm::ortho(0.f, width * Zoom + 0.f, 0.f, height * Zoom + 0.f, 0.1f, 100.0f);
 
@@ -87,5 +88,7 @@ void Render::RenderTextSprite(TextSprite *sprite) const
 
 void Render::ResizeWindow(int width, int height)
 {
+    this->width = width;
+    this->height = height;
     ProjectMat = glm::ortho(0.f, width * Zoom + 0.f, 0.f, height * Zoom + 0.f, 0.1f, 100.0f);
 }
