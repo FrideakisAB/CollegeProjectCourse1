@@ -185,18 +185,18 @@ void Simulation::OnRender()
 {
     Render &render = Engine::Get().GetRender();
 
-    render.RenderSprite(ball.get());
-    render.RenderSprite(arrowYBody.get());
-    render.RenderSprite(arrowXBody.get());
-    render.RenderSprite(arrowStart.get());
-    render.RenderSprite(arrowYEnd.get());
-    render.RenderSprite(arrowXEnd.get());
+    render.RenderSprite(*ball);
+    render.RenderSprite(*arrowYBody);
+    render.RenderSprite(*arrowXBody);
+    render.RenderSprite(*arrowStart);
+    render.RenderSprite(*arrowYEnd);
+    render.RenderSprite(*arrowXEnd);
 
     for (auto &point : points)
     {
         falseBall->Position.x = point.x;
         falseBall->Position.y = point.y;
-        render.RenderSprite(falseBall.get());
+        render.RenderSprite(*falseBall);
     }
 }
 
@@ -209,8 +209,8 @@ void Simulation::RenderOnUI() const
     ImGui::SetNextWindowBgAlpha(0.0f);
     ImGui::Begin("##1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
                                  ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus);
-    render.RenderTextSprite(textX.get());
-    render.RenderTextSprite(textY.get());
+    render.RenderTextSprite(*textX);
+    render.RenderTextSprite(*textY);
     ImGui::End();
 }
 
@@ -250,12 +250,12 @@ void Simulation::SimulationIterate()
         textY->Position.y = ball->Position.y - 10;
 
         std::stringstream ss;
-        ss << std::floor(x * 100 + 0.5) / 100 << 'm';
+        ss << "x = " << std::floor(x * 100 + 0.5) / 100 << 'm';
         textX->Text = ss.str();
 
         ss = std::stringstream();
 
-        ss << std::floor(y * 100 + 0.5) / 100 << 'm';
+        ss << "y = " << std::floor(y * 100 + 0.5) / 100 << 'm';
         textY->Text = ss.str();
 
         points.emplace_back(ball->Position.x, ball->Position.y);

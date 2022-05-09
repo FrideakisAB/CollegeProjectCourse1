@@ -30,9 +30,9 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 conan_cmake_run(CONANFILE conanfile.txt 
-				INSTALL_FOLDER ${CMAKE_BINARY_DIR}/pkgs
-				BASIC_SETUP
-				BUILD missing
+	INSTALL_FOLDER ${CMAKE_BINARY_DIR}/pkgs
+	BASIC_SETUP
+	BUILD missing
 )
 
 if(PROJECT_IS_MSVC_CLANG AND NOT CMAKE_CXX_COMPILER_ID MATCHES GNU)

@@ -50,39 +50,44 @@ Render::~Render()
     glDeleteVertexArrays(1, &boxVAO);
 }
 
-void Render::RenderSprite(Sprite *sprite) const
+void Render::RenderSprite(const Sprite &sprite) const
 {
-    const Shader &shader = Engine::Get().GetResourceManager().GetShader(sprite->Shader);
+    const Shader &shader = Engine::Get().GetResourceManager().GetShader(sprite.Shader);
 
     shader.Use();
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, sprite->Position);
+    model = glm::translate(model, sprite.Position);
     model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-    model = glm::scale(model, glm::vec3(sprite->Scale.x, sprite->Scale.y, 1));
+    model = glm::scale(model, glm::vec3(sprite.Scale.x, sprite.Scale.y, 1));
 
     shader.SetMat4("model", model);
     shader.SetMat4("view", Camera::Main.value().get().GetViewMatrix());
     shader.SetMat4("projection", ProjectMat);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, Engine::Get().GetResourceManager().GetTexture(sprite->Texture));
+    glBindTexture(GL_TEXTURE_2D, Engine::Get().GetResourceManager().GetTexture(sprite.Texture));
 
     glBindVertexArray(boxVAO);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
 
-void Render::RenderTextSprite(TextSprite *sprite) const
+void Render::RenderTextSprite(const TextSprite &sprite) const
 {
-    glm::vec4 position = ProjectMat * Camera::Main.value().get().GetViewMatrix() * glm::vec4(sprite->Position.x, sprite->Position.y, sprite->Position.z, 1.0f);
+    glm::vec4 position = ProjectMat * Camera::Main.value().get().GetViewMatrix() * glm::vec4(sprite.Position.x, sprite.Position.y, sprite.Position.z, 1.0f);
 
     auto size = ImGui::GetWindowSize();
 
-    auto textSize = ImGui::CalcTextSize(sprite->Text.c_str());
+    auto textSize = ImGui::CalcTextSize(sprite.Text.c_str());
 
-    ImGui::SetCursorPos({position.x * size.x / 2 + size.x / 2 - textSize.x / 2, size.y - (position.y * size.y / 2 + size.y / 2) - textSize.y / 2});
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(sprite->Color.r, sprite->Color.g, sprite->Color.b, 1.0f));
-    ImGui::Text(sprite->Text.c_str());
+    glm::vec2 screenPosition = glm::vec2(position.x * size.x / 2 + size.x / 2 - textSize.x / 2, size.y - (position.y * size.y / 2 + size.y / 2) - textSize.y / 2);
+
+    screenPosition.x = glm::clamp(screenPosition.x, textSize.x / 2, size.x - textSize.x);
+    screenPosition.y = glm::clamp(screenPosition.y, textSize.y / 2, size.y - textSize.y);
+
+    ImGui::SetCursorPos({screenPosition.x , screenPosition.y});
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(sprite.Color.r, sprite.Color.g, sprite.Color.b, 1.0f));
+    ImGui::Text(sprite.Text.c_str());
     ImGui::PopStyleColor();
 }
 

@@ -14,8 +14,8 @@ public:
     Render(int width, int height);
     ~Render();
 
-    void RenderSprite(Sprite *sprite) const;
-    void RenderTextSprite(TextSprite *sprite) const;
+    void RenderSprite(const Sprite &sprite) const;
+    void RenderTextSprite(const TextSprite &sprite) const;
 
     void ResizeWindow(int width, int height);
 
