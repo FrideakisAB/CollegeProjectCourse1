@@ -8,7 +8,6 @@ class GameObject {
 public:
     virtual ~GameObject() = default;
 
-    bool Active = true;
     glm::vec3 Position = glm::vec3(0.0f);
     glm::vec2 Scale = glm::vec2(1.0f);
 

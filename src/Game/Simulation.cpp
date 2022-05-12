@@ -41,7 +41,8 @@ void Simulation::OnKeyInput(int key, int action)
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
     {
         simulationTime = 0.f;
-        points.erase(points.begin(), points.end());
+        trajectory->Points.erase(trajectory->Points.begin(), trajectory->Points.end());
+        trajectory->PointsPosition = 0;
     }
 }
 
@@ -129,6 +130,9 @@ void Simulation::PostInit()
     textY->Position = glm::vec3(0, 34, -2);
     textY->Scale = glm::vec2(200, 200);
     textY->Text = "17893s";
+
+    trajectory = std::make_unique<LinesSprite>("TrajectoryLine");
+    trajectory->Position.z = -4;
 }
 
 void Simulation::ParseInput()
@@ -169,7 +173,8 @@ void Simulation::CalculateFromValues()
     maxHeight = startSpeed * sinAngle * 0.5f * simulationEndTime - halfG * 0.25f * simulationEndTime * simulationEndTime;
 
     simulationTime = 0.f;
-    points.erase(points.begin(), points.end());
+    trajectory->Points.erase(trajectory->Points.begin(), trajectory->Points.end());
+    trajectory->PointsPosition = 0;
 
     arrowYBody->Position.y = 90 + (maxHeight * 15 + 120) * yScale / 2;
     arrowYBody->Scale.y = (maxHeight * 15 + 120) * yScale;
@@ -192,12 +197,16 @@ void Simulation::OnRender()
     render.RenderSprite(*arrowYEnd);
     render.RenderSprite(*arrowXEnd);
 
+    /*
     for (auto &point : points)
     {
         falseBall->Position.x = point.x;
         falseBall->Position.y = point.y;
         render.RenderSprite(*falseBall);
     }
+    */
+
+    render.RenderLinesSprite(*trajectory);
 }
 
 void Simulation::RenderOnUI() const
@@ -258,6 +267,7 @@ void Simulation::SimulationIterate()
         ss << "y = " << std::floor(y * 100 + 0.5) / 100 << 'm';
         textY->Text = ss.str();
 
-        points.emplace_back(ball->Position.x, ball->Position.y);
+        trajectory->Points.emplace_back(ball->Position.x, ball->Position.y);
+        ++trajectory->PointsPosition;
     }
 }

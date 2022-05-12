@@ -8,6 +8,7 @@
 #include "Game/Sprite.h"
 #include "Game/TextSprite.h"
 #include "Game/Camera.h"
+#include "Game/LinesSprite.h"
 
 class Render {
 public:
@@ -16,6 +17,7 @@ public:
 
     void RenderSprite(const Sprite &sprite) const;
     void RenderTextSprite(const TextSprite &sprite) const;
+    void RenderLinesSprite(const LinesSprite &sprite) const;
 
     void ResizeWindow(int width, int height);
 
@@ -27,6 +29,7 @@ public:
 private:
     int width, height;
     unsigned int boxVAO{};
+    unsigned int linesVAO{}, linesVBO{};
 };
 
 #endif

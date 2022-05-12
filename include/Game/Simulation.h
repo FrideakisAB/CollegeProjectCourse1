@@ -6,6 +6,7 @@
 #include "Game/Sprite.h"
 #include "Game/Camera.h"
 #include "Game/TextSprite.h"
+#include "Game/LinesSprite.h"
 #include "Game/UI/ControlWindow.h"
 
 class Simulation {
@@ -38,8 +39,6 @@ private:
 
     float x, y;
 
-    std::vector<glm::vec2> points;
-
     std::unique_ptr<Camera> camera{};
 
     std::unique_ptr<Sprite> ball{};
@@ -52,6 +51,8 @@ private:
 
     std::unique_ptr<TextSprite> textY{};
     std::unique_ptr<TextSprite> textX{};
+
+    std::unique_ptr<LinesSprite> trajectory;
 
     static void CameraControl();
     void ParseInput();

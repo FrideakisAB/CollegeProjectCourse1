@@ -43,11 +43,28 @@ Render::Render(int width, int height) :
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    glGenVertexArrays(1, &linesVAO);
+    glGenBuffers(1, &linesVBO);
+
+    glBindVertexArray(linesVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
+    glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(glm::vec2), nullptr, GL_STREAM_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)nullptr);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    glLineWidth(128);
 }
 
 Render::~Render()
 {
     glDeleteVertexArrays(1, &boxVAO);
+    glDeleteVertexArrays(1, &linesVAO);
 }
 
 void Render::RenderSprite(const Sprite &sprite) const
@@ -57,12 +74,9 @@ void Render::RenderSprite(const Sprite &sprite) const
     shader.Use();
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, sprite.Position);
-    model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
     model = glm::scale(model, glm::vec3(sprite.Scale.x, sprite.Scale.y, 1));
 
-    shader.SetMat4("model", model);
-    shader.SetMat4("view", Camera::Main.value().get().GetViewMatrix());
-    shader.SetMat4("projection", ProjectMat);
+    shader.SetMat4("mvp", ProjectMat * Camera::Main.value().get().GetViewMatrix() * model);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, Engine::Get().GetResourceManager().GetTexture(sprite.Texture));
@@ -70,6 +84,8 @@ void Render::RenderSprite(const Sprite &sprite) const
     glBindVertexArray(boxVAO);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+    glBindVertexArray(0);
 }
 
 void Render::RenderTextSprite(const TextSprite &sprite) const
@@ -89,6 +105,29 @@ void Render::RenderTextSprite(const TextSprite &sprite) const
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(sprite.Color.r, sprite.Color.g, sprite.Color.b, 1.0f));
     ImGui::Text(sprite.Text.c_str());
     ImGui::PopStyleColor();
+}
+
+void Render::RenderLinesSprite(const LinesSprite &sprite) const
+{
+    if (sprite.PointsPosition > 1)
+    {
+        const Shader &shader = Engine::Get().GetResourceManager().GetShader("Lines");
+
+        shader.Use();
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, sprite.Position);
+        model = glm::scale(model, glm::vec3(sprite.Scale.x, sprite.Scale.y, 1));
+
+        shader.SetMat4("mvp", ProjectMat * Camera::Main.value().get().GetViewMatrix() * model);
+
+        glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
+        glBufferData(GL_ARRAY_BUFFER, sprite.PointsPosition * sizeof(glm::vec2), sprite.Points.data(), GL_STREAM_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glBindVertexArray(linesVAO);
+        glDrawArrays(GL_LINE_STRIP, 0, sprite.PointsPosition);
+        glBindVertexArray(0);
+    }
 }
 
 void Render::ResizeWindow(int width, int height)

@@ -12,6 +12,7 @@ ResourceManager::ResourceManager()
 	LoadTexture("ArrowXEnd", "resources/textures/arrowXEnd.png", 4);
 	LoadTexture("ArrowYEnd", "resources/textures/arrowYEnd.png", 4);
 	LoadShader("Standard", "Standard");
+    LoadShader("Lines", "Lines");
 }
 
 void ResourceManager::LoadTexture(const std::string& name, const std::string& path, int mode)
