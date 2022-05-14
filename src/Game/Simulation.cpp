@@ -41,8 +41,7 @@ void Simulation::OnKeyInput(int key, int action)
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
     {
         simulationTime = 0.f;
-        trajectory->Points.erase(trajectory->Points.begin(), trajectory->Points.end());
-        trajectory->PointsPosition = 0;
+        trajectory->ClearPoints();
     }
 }
 
@@ -92,11 +91,6 @@ void Simulation::PostInit()
     ball->Texture ="Ball";
     ball->Position = glm::vec3(102, 101, -2);
     ball->Scale = glm::vec2(50, 50);
-
-    falseBall = std::make_unique<Sprite>("FalseBall");
-    falseBall->Texture ="PBall";
-    falseBall->Position = glm::vec3(102, 101, -3);
-    falseBall->Scale = glm::vec2(5, 5);
 
     arrowStart = std::make_unique<Sprite>("ArrowStart");
     arrowStart->Texture ="ArrowStart";
@@ -173,8 +167,7 @@ void Simulation::CalculateFromValues()
     maxHeight = startSpeed * sinAngle * 0.5f * simulationEndTime - halfG * 0.25f * simulationEndTime * simulationEndTime;
 
     simulationTime = 0.f;
-    trajectory->Points.erase(trajectory->Points.begin(), trajectory->Points.end());
-    trajectory->PointsPosition = 0;
+    trajectory->ClearPoints();
 
     arrowYBody->Position.y = 90 + (maxHeight * 15 + 120) * yScale / 2;
     arrowYBody->Scale.y = (maxHeight * 15 + 120) * yScale;
@@ -196,15 +189,6 @@ void Simulation::OnRender()
     render.RenderSprite(*arrowStart);
     render.RenderSprite(*arrowYEnd);
     render.RenderSprite(*arrowXEnd);
-
-    /*
-    for (auto &point : points)
-    {
-        falseBall->Position.x = point.x;
-        falseBall->Position.y = point.y;
-        render.RenderSprite(*falseBall);
-    }
-    */
 
     render.RenderLinesSprite(*trajectory);
 }
@@ -267,7 +251,12 @@ void Simulation::SimulationIterate()
         ss << "y = " << std::floor(y * 100 + 0.5) / 100 << 'm';
         textY->Text = ss.str();
 
-        trajectory->Points.emplace_back(ball->Position.x, ball->Position.y);
+        auto winRect = Engine::Get().GetRender().GetWindowSize();
+
+        if (controlWindow.IsTrackBall)
+            camera->Position = glm::vec3(ball->Position.x - winRect.x / 2, ball->Position.y - winRect.y / 2, 1.0f);
+
+        trajectory->AddPoint({ball->Position.x, ball->Position.y});
         ++trajectory->PointsPosition;
     }
 }

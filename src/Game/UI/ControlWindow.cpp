@@ -6,7 +6,7 @@
 void ControlWindow::Draw()
 {
     ImGui::SetNextWindowPos({0, 0});
-    ImGui::SetNextWindowSize({365, 130});
+    ImGui::SetNextWindowSize({390, 150});
     ImGui::Begin("Параметры", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     {
         ImGui::Text("Скорость:");
@@ -20,6 +20,9 @@ void ControlWindow::Draw()
         ImGui::SliderFloat("##3", &Engine::Get().GetTimer().TimeScale, MinTimeScale, MaxTimeScale, "%.1f");
         ImGui::SameLine();
         ImGui::Text("(x%.1f)", Engine::Get().GetTimer().TimeScale);
+        ImGui::Text("Следовать:");
+        ImGui::SameLine();
+        ImGui::Checkbox("##5", &IsTrackBall);
     }
     ImGui::End();
 }

@@ -8,7 +8,9 @@ public:
 
     void Draw();
 
-    float Velocity, Angle;
+    float Velocity = 18.f;
+    float Angle = 30.f;
+    bool IsTrackBall = false;
 };
 
 #endif

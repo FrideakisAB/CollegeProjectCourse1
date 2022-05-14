@@ -48,6 +48,7 @@ set(Source
 
 	src/Game/Sprite.cpp
 	src/Game/Simulation.cpp
+	src/Game/LinesSprite.cpp
 
 	src/Game/UI/InfoWindow.cpp
 	src/Game/UI/ControlWindow.cpp

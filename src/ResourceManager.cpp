@@ -5,7 +5,6 @@
 ResourceManager::ResourceManager()
 {
 	LoadTexture("Ball", "resources/textures/ball.png", 4);
-	LoadTexture("PBall", "resources/textures/pball.png", 4);
 	LoadTexture("ArrowStart", "resources/textures/arrowStart.png", 4);
 	LoadTexture("ArrowXBody", "resources/textures/arrowXBody.png", 4);
 	LoadTexture("ArrowYBody", "resources/textures/arrowYBody.png", 4);

@@ -42,7 +42,6 @@ private:
     std::unique_ptr<Camera> camera{};
 
     std::unique_ptr<Sprite> ball{};
-    std::unique_ptr<Sprite> falseBall{};
     std::unique_ptr<Sprite> arrowXBody{};
     std::unique_ptr<Sprite> arrowYBody{};
     std::unique_ptr<Sprite> arrowXEnd{};

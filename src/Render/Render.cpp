@@ -57,8 +57,6 @@ Render::Render(int width, int height) :
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
-    glLineWidth(128);
 }
 
 Render::~Render()
@@ -120,9 +118,12 @@ void Render::RenderLinesSprite(const LinesSprite &sprite) const
 
         shader.SetMat4("mvp", ProjectMat * Camera::Main.value().get().GetViewMatrix() * model);
 
-        glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-        glBufferData(GL_ARRAY_BUFFER, sprite.PointsPosition * sizeof(glm::vec2), sprite.Points.data(), GL_STREAM_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        if (sprite.IsUpdate)
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
+            glBufferData(GL_ARRAY_BUFFER, sprite.PointsPosition * sizeof(glm::vec2), sprite.GetPointsPtr(), GL_STREAM_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
 
         glBindVertexArray(linesVAO);
         glDrawArrays(GL_LINE_STRIP, 0, sprite.PointsPosition);
