@@ -4,13 +4,17 @@
 #include <string>
 #include <vector>
 #include "GameObject.h"
+#include "Render/LinesSpriteTask.h"
 
 class LinesSprite final : public GameObject {
 private:
+    LinesSpriteTask task{*this};
     std::vector<glm::vec2> Points{};
 
 public:
     explicit LinesSprite(std::string name) { Name = std::move(name); }
+
+    [[nodiscard]] IRenderTask *GetRenderTask() override;
 
     void AddPoint(glm::vec2 point);
     void ClearPoints();

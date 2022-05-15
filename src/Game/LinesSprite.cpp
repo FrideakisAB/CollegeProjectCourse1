@@ -16,3 +16,9 @@ const glm::vec2 *LinesSprite::GetPointsPtr() const noexcept
 {
     return Points.data();
 }
+
+IRenderTask *LinesSprite::GetRenderTask()
+{
+    task.Update(*this);
+    return &task;
+}

@@ -9,17 +9,21 @@
 #include "Game/TextSprite.h"
 #include "Game/Camera.h"
 #include "Game/LinesSprite.h"
+#include "Render/IRenderTask.h"
 
 class Render {
 public:
     Render(int width, int height);
-    ~Render();
 
-    void RenderSprite(const Sprite &sprite) const;
     void RenderTextSprite(const TextSprite &sprite) const;
-    void RenderLinesSprite(const LinesSprite &sprite) const;
 
     void ResizeWindow(int width, int height);
+
+    void Draw();
+    void UIDraw();
+
+    void AddRenderTask(IRenderTask *task);
+    void AddUITask(IRenderTask *task);
 
     glm::mat4 ProjectMat = glm::mat4(1.f);
     float Zoom = 1.0f;
@@ -28,8 +32,9 @@ public:
 
 private:
     int width, height;
-    unsigned int boxVAO{};
-    unsigned int linesVAO{}, linesVBO{};
+
+    std::map<std::string_view, std::vector<IRenderTask*>> renderTasks;
+    std::vector<IRenderTask*> uiTasks;
 };
 
 #endif

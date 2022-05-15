@@ -30,6 +30,7 @@ void Engine::OnUpdate()
 void Engine::OnRender()
 {
     simulation.OnRender();
+    render.Draw();
 }
 
 void Engine::OnUIRender()

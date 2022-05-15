@@ -183,14 +183,13 @@ void Simulation::OnRender()
 {
     Render &render = Engine::Get().GetRender();
 
-    render.RenderSprite(*ball);
-    render.RenderSprite(*arrowYBody);
-    render.RenderSprite(*arrowXBody);
-    render.RenderSprite(*arrowStart);
-    render.RenderSprite(*arrowYEnd);
-    render.RenderSprite(*arrowXEnd);
-
-    render.RenderLinesSprite(*trajectory);
+    render.AddRenderTask(ball->GetRenderTask());
+    render.AddRenderTask(arrowYBody->GetRenderTask());
+    render.AddRenderTask(arrowXBody->GetRenderTask());
+    render.AddRenderTask(arrowStart->GetRenderTask());
+    render.AddRenderTask(arrowYEnd->GetRenderTask());
+    render.AddRenderTask(arrowXEnd->GetRenderTask());
+    render.AddRenderTask(trajectory->GetRenderTask());
 }
 
 void Simulation::RenderOnUI() const

@@ -11,79 +11,6 @@ Render::Render(int width, int height) :
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-
-    float vertices[] = {
-        // positions    // texture coords
-         0.5f,  0.5f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f,   0.0f, 1.0f  // top left
-    };
-    unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-    unsigned int VBO, EBO;
-    glGenVertexArrays(1, &boxVAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(boxVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)nullptr);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    glGenVertexArrays(1, &linesVAO);
-    glGenBuffers(1, &linesVBO);
-
-    glBindVertexArray(linesVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-    glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(glm::vec2), nullptr, GL_STREAM_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)nullptr);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
-
-Render::~Render()
-{
-    glDeleteVertexArrays(1, &boxVAO);
-    glDeleteVertexArrays(1, &linesVAO);
-}
-
-void Render::RenderSprite(const Sprite &sprite) const
-{
-    const Shader &shader = Engine::Get().GetResourceManager().GetShader(sprite.Shader);
-
-    shader.Use();
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, sprite.Position);
-    model = glm::scale(model, glm::vec3(sprite.Scale.x, sprite.Scale.y, 1));
-
-    shader.SetMat4("mvp", ProjectMat * Camera::Main.value().get().GetViewMatrix() * model);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, Engine::Get().GetResourceManager().GetTexture(sprite.Texture));
-
-    glBindVertexArray(boxVAO);
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-
-    glBindVertexArray(0);
 }
 
 void Render::RenderTextSprite(const TextSprite &sprite) const
@@ -105,35 +32,48 @@ void Render::RenderTextSprite(const TextSprite &sprite) const
     ImGui::PopStyleColor();
 }
 
-void Render::RenderLinesSprite(const LinesSprite &sprite) const
-{
-    if (sprite.PointsPosition > 1)
-    {
-        const Shader &shader = Engine::Get().GetResourceManager().GetShader("Lines");
-
-        shader.Use();
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, sprite.Position);
-        model = glm::scale(model, glm::vec3(sprite.Scale.x, sprite.Scale.y, 1));
-
-        shader.SetMat4("mvp", ProjectMat * Camera::Main.value().get().GetViewMatrix() * model);
-
-        if (sprite.IsUpdate)
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-            glBufferData(GL_ARRAY_BUFFER, sprite.PointsPosition * sizeof(glm::vec2), sprite.GetPointsPtr(), GL_STREAM_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-        }
-
-        glBindVertexArray(linesVAO);
-        glDrawArrays(GL_LINE_STRIP, 0, sprite.PointsPosition);
-        glBindVertexArray(0);
-    }
-}
-
 void Render::ResizeWindow(int width, int height)
 {
     this->width = width;
     this->height = height;
     ProjectMat = glm::ortho(0.f, width * Zoom + 0.f, 0.f, height * Zoom + 0.f, 0.1f, 100.0f);
+}
+
+void Render::Draw()
+{
+    for (const auto &[shaderName, taskVector] : renderTasks)
+    {
+        for (IRenderTask *task : taskVector)
+        {
+            const Shader &shader = Engine::Get().GetResourceManager().GetShader(shaderName.data());
+
+            shader.Use();
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, task->Position);
+            model = glm::scale(model, glm::vec3(task->Scale.x, task->Scale.y, 1));
+
+            shader.SetMat4("mvp", ProjectMat * Camera::Main.value().get().GetViewMatrix() * model);
+
+            task->Draw(shader);
+        }
+    }
+
+    renderTasks.clear();
+}
+
+void Render::UIDraw()
+{
+    //TODO: make on add UITask
+}
+
+void Render::AddRenderTask(IRenderTask *task)
+{
+    if (task != nullptr)
+        renderTasks[task->ShaderName].emplace_back(task);
+}
+
+void Render::AddUITask(IRenderTask *task)
+{
+    if (task != nullptr)
+        uiTasks.emplace_back(task);
 }
