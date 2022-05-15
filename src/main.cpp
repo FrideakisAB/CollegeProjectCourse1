@@ -9,6 +9,7 @@
 #include "ImGui/imgui_impl_glfw.h"
 #include "ImGui/imgui_impl_opengl3.h"
 #include "Engine.h"
+#include "Log.h"
 
 namespace fs = std::filesystem;
 
@@ -25,10 +26,13 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "GLEngine", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(1280, 720, "GLEngine", nullptr, nullptr);
     if (window == nullptr)
     {
+        Log::Get().Error("Failed window creation");
         glfwTerminate();
+        Log::Destroy();
+
         return -2;
     }
     glfwMakeContextCurrent(window);
@@ -48,7 +52,10 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
+        Log::Get().Error("Failed initialisation GLEW, may be OpenGL 3.3 not support");
         glfwTerminate();
+        Log::Destroy();
+
         return -3;
     }
 
@@ -101,6 +108,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwTerminate();
+    Log::Destroy();
 
     return 0;
 }

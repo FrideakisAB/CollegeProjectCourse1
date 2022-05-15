@@ -41,6 +41,7 @@ if(PROJECT_IS_MSVC_CLANG AND NOT CMAKE_CXX_COMPILER_ID MATCHES GNU)
 endif()
 
 set(Source
+	src/Log.cpp
 	src/main.cpp
 	src/Timer.cpp
 	src/Engine.cpp

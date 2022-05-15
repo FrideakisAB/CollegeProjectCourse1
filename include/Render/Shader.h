@@ -22,10 +22,7 @@ public:
     bool Load(const std::string &vertexPath, const std::string &fragmentPath);
     bool LoadSource(const std::string &vertexSrc, const std::string &fragmentSrc);
 
-    [[nodiscard]] bool IsValid() const noexcept
-    {
-        return id != 0;
-    }
+    [[nodiscard]] bool IsValid() const noexcept { return id != 0; }
 
     void Use() const;
 

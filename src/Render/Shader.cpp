@@ -1,8 +1,8 @@
 #include "Render/Shader.h"
 
+#include "Log.h"
 #include <fstream>
 #include <sstream>
-#include <iostream>
 
 Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath)
 {
@@ -40,7 +40,7 @@ bool Shader::Load(const std::string &vertexPath, const std::string &fragmentPath
     }
     catch (const std::ifstream::failure &e)
     {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
+        Log::Get().Error(std::string("Shader file read error: ") + e.what());
         return false;
     }
 
@@ -59,13 +59,13 @@ bool Shader::LoadSource(const std::string &vertexSrc, const std::string &fragmen
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vertexSrcC, nullptr);
     glCompileShader(vertex);
-    if (!checkCompileErrors(vertex, "VERTEX"))
+    if (!checkCompileErrors(vertex, "Vertex"))
         isCorrect = false;
 
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fragmentSrcC, nullptr);
     glCompileShader(fragment);
-    if (!checkCompileErrors(fragment, "FRAGMENT"))
+    if (!checkCompileErrors(fragment, "Fragment"))
         isCorrect = false;
 
     if (id != 0)
@@ -75,7 +75,7 @@ bool Shader::LoadSource(const std::string &vertexSrc, const std::string &fragmen
     glAttachShader(id, vertex);
     glAttachShader(id, fragment);
     glLinkProgram(id);
-    if (!checkCompileErrors(id, "PROGRAM"))
+    if (!checkCompileErrors(id, "Program"))
         isCorrect = false;
 
     glDeleteShader(vertex);
@@ -160,13 +160,14 @@ bool Shader::checkCompileErrors(GLuint shader, const std::string &type)
 {
     int success;
     char infoLog[1024];
-    if (type != "PROGRAM")
+    if (type != "Program")
     {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success)
         {
             glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-            std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << std::endl;
+            Log::Get().Error(std::string("Shader compilation error ") + type);
+            Log::Get().Info(std::string("Shader compilation error, description: ") + infoLog);
 
             return false;
         }
@@ -177,7 +178,8 @@ bool Shader::checkCompileErrors(GLuint shader, const std::string &type)
         if (!success)
         {
             glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-            std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << std::endl;
+            Log::Get().Error(std::string("Program linking error ") + type);
+            Log::Get().Info(std::string("Program linking error, description: ") + infoLog);
 
             return false;
         }

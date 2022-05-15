@@ -14,8 +14,10 @@ private:
     static constexpr float PI = 3.14159265358979323846f;
     static constexpr float g = 9.8066f;
     static constexpr float halfG = g / 2.f;
+
     static constexpr float yScale = 1.f;
     static constexpr float xScale = 1.f;
+
     static constexpr float cameraSpeed = 80.f;
     static constexpr float cameraShiftSpeed = 2.5f;
 

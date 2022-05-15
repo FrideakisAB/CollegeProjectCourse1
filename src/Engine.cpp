@@ -1,10 +1,15 @@
 #include "Engine.h"
 
+#include "Log.h"
+
 Engine::Engine(GLFWwindow *window) :
     window(window)
 {
     if (IsValid())
+    {
+        Log::Get().Error("Trying to Duplicate Engine, not allowed");
         throw new std::exception("Dont create duplicate Engine");
+    }
 
     instance = this;
 
