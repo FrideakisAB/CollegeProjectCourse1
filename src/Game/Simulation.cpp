@@ -1,7 +1,6 @@
 #include "Game/Simulation.h"
 
 #include "Engine.h"
-#include <imgui.h>
 #include <algorithm>
 #include <GLFW/glfw3.h>
 #include "Game/UI/InfoWindow.h"
@@ -196,14 +195,8 @@ void Simulation::RenderOnUI() const
 {
     Render &render = Engine::Get().GetRender();
 
-    ImGui::SetNextWindowPos({0, 0});
-    ImGui::SetNextWindowSize({static_cast<float>(render.GetWindowSize().x), static_cast<float>(render.GetWindowSize().y)});
-    ImGui::SetNextWindowBgAlpha(0.0f);
-    ImGui::Begin("##1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
-                                 ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus);
-    render.RenderTextSprite(*textX);
-    render.RenderTextSprite(*textY);
-    ImGui::End();
+    render.AddUITask(textX->GetRenderTask());
+    render.AddUITask(textY->GetRenderTask());
 }
 
 void Simulation::SetTitleFromState() const

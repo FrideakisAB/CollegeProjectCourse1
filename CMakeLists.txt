@@ -57,6 +57,7 @@ set(Source
 	src/Render/Render.cpp
 	src/Render/Shader.cpp
 	src/Render/SpriteTask.cpp
+	src/Render/TextSpriteTask.cpp
 	src/Render/LinesSpriteTask.cpp
 
 	src/ImGui/imgui_impl_glfw.cpp

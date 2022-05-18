@@ -20,7 +20,7 @@ public:
     LinesSpriteTask(const LinesSprite &sprite);
     ~LinesSpriteTask() final = default;
 
-    void Draw(const Shader &shader) override;
+    void Draw(const Shader &shader) final;
     void Update(const LinesSprite &sprite);
 };
 

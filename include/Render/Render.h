@@ -15,8 +15,6 @@ class Render {
 public:
     Render(int width, int height);
 
-    void RenderTextSprite(const TextSprite &sprite) const;
-
     void ResizeWindow(int width, int height);
 
     void Draw();

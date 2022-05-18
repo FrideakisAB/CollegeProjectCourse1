@@ -13,25 +13,6 @@ Render::Render(int width, int height) :
     glEnable(GL_DEPTH_TEST);
 }
 
-void Render::RenderTextSprite(const TextSprite &sprite) const
-{
-    glm::vec4 position = ProjectMat * Camera::Main.value().get().GetViewMatrix() * glm::vec4(sprite.Position.x, sprite.Position.y, sprite.Position.z, 1.0f);
-
-    auto size = ImGui::GetWindowSize();
-
-    auto textSize = ImGui::CalcTextSize(sprite.Text.c_str());
-
-    glm::vec2 screenPosition = glm::vec2(position.x * size.x / 2 + size.x / 2 - textSize.x / 2, size.y - (position.y * size.y / 2 + size.y / 2) - textSize.y / 2);
-
-    screenPosition.x = glm::clamp(screenPosition.x, textSize.x / 2, size.x - textSize.x);
-    screenPosition.y = glm::clamp(screenPosition.y, textSize.y / 2, size.y - textSize.y);
-
-    ImGui::SetCursorPos({screenPosition.x , screenPosition.y});
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(sprite.Color.r, sprite.Color.g, sprite.Color.b, 1.0f));
-    ImGui::Text(sprite.Text.c_str());
-    ImGui::PopStyleColor();
-}
-
 void Render::ResizeWindow(int width, int height)
 {
     this->width = width;
@@ -63,7 +44,8 @@ void Render::Draw()
 
 void Render::UIDraw()
 {
-    //TODO: make on add UITask
+    for (IRenderTask *task : uiTasks)
+        task->UIDraw();
 }
 
 void Render::AddRenderTask(IRenderTask *task)

@@ -12,7 +12,7 @@ private:
 public:
     explicit Sprite(std::string name);
 
-    [[nodiscard]] IRenderTask *GetRenderTask() override;
+    [[nodiscard]] IRenderTask *GetRenderTask() final;
 
     std::string Texture, Shader;
 };

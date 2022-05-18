@@ -15,7 +15,7 @@ public:
     SpriteTask(const Sprite &sprite);
     ~SpriteTask() final = default;
 
-    void Draw(const Shader &shader) override;
+    void Draw(const Shader &shader) final;
 
     std::string_view Texture;
 };

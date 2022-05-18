@@ -14,7 +14,7 @@ private:
 public:
     explicit LinesSprite(std::string name) { Name = std::move(name); }
 
-    [[nodiscard]] IRenderTask *GetRenderTask() override;
+    [[nodiscard]] IRenderTask *GetRenderTask() final;
 
     void AddPoint(glm::vec2 point);
     void ClearPoints();
