@@ -10,6 +10,9 @@ ResourceManager::ResourceManager()
 	LoadTexture("ArrowYBody", "resources/textures/arrowYBody.png", 4);
 	LoadTexture("ArrowXEnd", "resources/textures/arrowXEnd.png", 4);
 	LoadTexture("ArrowYEnd", "resources/textures/arrowYEnd.png", 4);
+    LoadTexture("StartPosIcon", "resources/textures/startBall.png", 4);
+    LoadTexture("MiddlePosIcon", "resources/textures/middleBall.png", 4);
+    LoadTexture("EndPosIcon", "resources/textures/endBall.png", 4);
 	LoadShader("Standard", "Standard");
     LoadShader("Lines", "Lines");
 }

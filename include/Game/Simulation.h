@@ -57,6 +57,7 @@ private:
 
     static void CameraControl();
     void ParseInput();
+    void ResetSimulation();
     void CalculateFromValues();
     void RenderOnUI() const;
     void SetTitleFromState() const;

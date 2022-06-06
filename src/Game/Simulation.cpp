@@ -130,6 +130,26 @@ void Simulation::PostInit()
 
 void Simulation::ParseInput()
 {
+    if (controlWindow.IsToStartRequest)
+    {
+        ResetSimulation();
+        controlWindow.IsToStartRequest = false;
+    }
+
+    if (controlWindow.IsToMiddleRequest)
+    {
+        ResetSimulation();
+        simulationTime = simulationEndTime / 2;
+        controlWindow.IsToMiddleRequest = false;
+    }
+
+    if (controlWindow.IsToEndRequest)
+    {
+        ResetSimulation();
+        simulationTime = simulationEndTime - 0.00001f;
+        controlWindow.IsToEndRequest = false;
+    }
+
     if (controlWindow.Velocity != startSpeed || controlWindow.Angle != angle)
     {
         if (controlWindow.Velocity >= 0)
@@ -157,6 +177,12 @@ void Simulation::ParseInput()
     }
 }
 
+void Simulation::ResetSimulation()
+{
+    simulationTime = 0.f;
+    trajectory->ClearPoints();
+}
+
 void Simulation::CalculateFromValues()
 {
     sinAngle = sin(angle * PI / 180);
@@ -165,8 +191,7 @@ void Simulation::CalculateFromValues()
     throwDistance = startSpeed * cosAngle * simulationEndTime;
     maxHeight = startSpeed * sinAngle * 0.5f * simulationEndTime - halfG * 0.25f * simulationEndTime * simulationEndTime;
 
-    simulationTime = 0.f;
-    trajectory->ClearPoints();
+    ResetSimulation();
 
     arrowYBody->Position.y = 90 + (maxHeight * 15 + 120) * yScale / 2;
     arrowYBody->Scale.y = (maxHeight * 15 + 120) * yScale;
