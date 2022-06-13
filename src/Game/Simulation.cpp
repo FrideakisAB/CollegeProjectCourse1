@@ -5,12 +5,6 @@
 #include <GLFW/glfw3.h>
 #include "Game/UI/InfoWindow.h"
 
-Simulation::Simulation()
-{
-    controlWindow.Velocity = startSpeed;
-    controlWindow.Angle = angle;
-}
-
 void Simulation::OnUpdate()
 {
     SetTitleFromState();
@@ -201,6 +195,10 @@ void Simulation::CalculateFromValues()
 
     arrowYEnd->Position.y = 90 + (maxHeight * 15 + 120) * yScale + 75;
     arrowXEnd->Position.x = 92 + (throwDistance * 15 + 100) * xScale + 75;
+
+    controlWindow.MaxHeight = maxHeight;
+    controlWindow.Distance = throwDistance;
+    controlWindow.TimeInFlight = simulationEndTime;
 }
 
 void Simulation::OnRender()

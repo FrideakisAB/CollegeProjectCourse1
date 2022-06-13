@@ -28,18 +28,18 @@ private:
     ControlWindow controlWindow{};
 
     bool isSimulationActive = false;
-    float startSpeed = 18;
-    float angle = 30;
-    float sinAngle = sin(angle * PI / 180);
-    float cosAngle = cos(angle * PI / 180);
+    float startSpeed{};
+    float angle{};
+    float sinAngle{};
+    float cosAngle{};
 
-    float simulationTime = 0.f;
-    float simulationEndTime = (startSpeed / halfG) * sinAngle;
+    float simulationTime{};
+    float simulationEndTime{};
 
-    float throwDistance = startSpeed * cosAngle * simulationEndTime;
-    float maxHeight = startSpeed * sinAngle * 0.5f * simulationEndTime - halfG * 0.25f * simulationEndTime * simulationEndTime;
+    float throwDistance{};
+    float maxHeight{};
 
-    float x, y;
+    float x{}, y{};
 
     std::unique_ptr<Camera> camera{};
 
@@ -64,8 +64,6 @@ private:
     void SimulationIterate();
 
 public:
-    Simulation();
-
     void PostInit();
 
     void OnUpdate();

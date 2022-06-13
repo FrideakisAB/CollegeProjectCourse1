@@ -6,7 +6,10 @@
 void ControlWindow::Draw()
 {
     ImGui::SetNextWindowPos({0, 0});
-    ImGui::SetNextWindowSize({390, 210});
+    if (!isParametersShow)
+        ImGui::SetNextWindowSize({390, 230});
+    else
+        ImGui::SetNextWindowSize({390, 295});
     ImGui::Begin("Параметры", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     {
         ImGui::Text("Скорость:");
@@ -33,6 +36,14 @@ void ControlWindow::Draw()
         ImGui::SameLine();
         if (ImGui::ImageButton((ImTextureID)Engine::Get().GetResourceManager().GetTexture("EndPosIcon"), ImVec2(45,45)))
             IsToEndRequest = true;
+
+        if ((isParametersShow = ImGui::TreeNode("Параметры")))
+        {
+            ImGui::Text("Время полёта: %f", TimeInFlight);
+            ImGui::Text("Макс. высота: %f", MaxHeight);
+            ImGui::Text("Расстояние: %f", Distance);
+            ImGui::TreePop();
+        }
     }
     ImGui::End();
 }
